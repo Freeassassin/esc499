@@ -1,0 +1,10 @@
+data/**
+TPC-HV3.0.1/**
+DSGen-software-code-4.0.0/**
+*.pdf
+*.bbl
+*.synctex.gz
+**.tmp
+*.duckdb
+*.duckdb.wal
+.vscode
