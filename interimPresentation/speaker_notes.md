@@ -35,7 +35,7 @@
 - "Here's the four-phase methodology."
 - "Starting from production traces, I build a query pool, profile on different hardware, then match and schedule queries to reproduce trace characteristics."
 - "The green line shows current progress—phases 1 and 2 complete."
-- "Key techniques: multi-objective optimization—exploring ILP, simulated annealing, and LLM-based approaches. LLM augmentation inspired by recent SQLBarber and SQLStorm work. And learned performance prediction."
+- "Key techniques: multi-objective optimization—exploring Integer Linear Programming (ILP), simulated annealing, and LLM-based approaches. LLM augmentation inspired by recent SQLBarber and SQLStorm work. And learned performance prediction."
 
 ---
 
@@ -61,7 +61,7 @@
 **Time: 2:10 - 2:50 (40 seconds)**
 
 - "Quick recap of findings you've seen before that drive the synthesis approach."
-- "Left side: workload characteristics—heavy-tailed durations with P95 100x median, 50%+ writes, scan-dominated CPU."
+- "Left side: workload characteristics—heavy-tailed durations with 95th percentile (P95) 100x median, 50%+ writes, scan-dominated CPU."
 - "Right side: novel discoveries—saturation threshold at 110 queries, non-monotonic warehouse scaling, low cache hits despite repetition."
 - "These define our matching targets. The synthetic workload must reproduce these patterns."
 
@@ -82,7 +82,7 @@
 **Time: 3:10 - 3:45 (35 seconds)**
 
 - "I've started preliminary LLM augmentation work."
-- "Using TPC-H and TPC-DS queries as seeds—asking the LLM to add outer joins, text predicates, CTEs to existing templates."
+- "Using TPC-H and TPC-DS queries as seeds—asking the LLM to add outer joins, text predicates, Common Table Expressions (CTEs) to existing templates."
 - "Tested multiple OpenAI models. GPT-4o-mini is fast and cheap for bulk work, but struggles with schema consistency. GPT-4o produces higher quality but is slower and more expensive."
 - "One approach I'm considering is cross-AI validation—use one model to generate queries, another to validate and critique."
 - "This could catch hallucinated table names or invalid SQL before we waste time profiling bad queries."
@@ -124,7 +124,7 @@
 **Time: 5:00 - 5:30 (30 seconds)**
 
 - "Let me explain these metrics."
-- "Kullback-Leibler (KL) divergence measures how different two probability distributions are—under 0.1 means the synthetic duration distribution closely matches the production trace."
+- "Kullback–Leibler (KL) divergence measures how different two probability distributions are—under 0.1 means the synthetic duration distribution closely matches the production trace."
 - "Operator proportions within 10%—if production has 40% scans, we want 36-44% in our synthetic workload."
 - "Concurrency within 15%—peak and median concurrent query counts should match the trace's temporal patterns."
 - "Cross-deployment stability means if we profile on 3 different VM configs, the relative query rankings should be consistent."
