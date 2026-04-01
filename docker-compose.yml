@@ -3,6 +3,7 @@ services:
     image: postgres:16
     container_name: postgres_db
     restart: always
+    shm_size: 1gb
     environment:
       POSTGRES_USER: myuser
       POSTGRES_PASSWORD: mypassword

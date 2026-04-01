@@ -102,6 +102,8 @@ parseTemplate(char *szFileName, int nIndex)
 		pCurrentQuery->SegmentList = makeList(L_FL_TAIL, NULL);
 		pCurrentQuery->SubstitutionList = makeList(L_FL_SORT, compareSubstitution);	
 		pCurrentQuery->DistributionList = makeList(L_FL_SORT, di_compare);
+		defineSubstitution(pCurrentQuery, "_BEGIN", MakeStringConstant(""));
+		defineSubstitution(pCurrentQuery, "_END", MakeStringConstant(""));
 
 		/*
 		 * each query template is parsed as though:
