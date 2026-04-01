@@ -102,7 +102,7 @@
 ################
 CC      = gcc
 # Current values for DATABASE are: INFORMIX, DB2, TDAT (Teradata)
-#                                  SQLSERVER, SYBASE, ORACLE, VECTORWISE, POSTGRESQL
+#                                  SQLSERVER, SYBASE, ORACLE, VECTORWISE, POSTGRESQL, DUCKDB
 # Current values for MACHINE are:  ATT, DOS, HP, IBM, ICL, MVS, 
 #                                  SGI, SUN, U2200, VMS, LINUX, WIN32 
 # Current values for WORKLOAD are:  TPCH
