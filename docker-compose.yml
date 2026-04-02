@@ -12,6 +12,57 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+  fe:
+    image: starrocks/fe-ubuntu:latest
+    container_name: starrocks-fe
+    hostname: fe
+    environment:
+      - FE_SERVERS=fe:127.0.0.1:9010
+      - FE_ID=1
+    ports:
+      - "8030:8030"   # HTTP UI
+      - "9030:9030"   # MySQL protocol
+    volumes:
+      - fe-meta:/opt/starrocks/fe/meta
+    command: >
+      bash -c "
+      /opt/starrocks/fe/bin/start_fe.sh --daemon &&
+      tail -f /dev/null
+      "
+
+  be:
+    image: starrocks/be-ubuntu:latest
+    container_name: starrocks-be
+    hostname: be
+    depends_on:
+      - fe
+    environment:
+      - FE_SERVERS=fe:127.0.0.1:9010
+      - BE_ADDR=be:9050
+    ports:
+      - "8040:8040"
+    volumes:
+      - be-storage:/opt/starrocks/be/storage
+    command: >
+      bash -c "
+      sleep 10 &&
+      /opt/starrocks/be/bin/start_be.sh --daemon &&
+      tail -f /dev/null
+      "
+  cedardb:
+    image: cedardb/cedardb:latest
+    container_name: cedardb
+    ports:
+      - "5432:5432"
+    volumes:
+      - cedardb-data:/var/lib/cedardb
+    environment:
+      - CEDAR_USER=admin
+      - CEDAR_PASSWORD=admin
+      - CEDAR_DB=db
 
 volumes:
+  cedardb-data:
+  fe-meta:
+  be-storage:
   postgres_data:

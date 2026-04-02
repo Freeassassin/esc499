@@ -1,2 +1,4 @@
 ref_data
 *.o
+*.dat
+__pycache__
