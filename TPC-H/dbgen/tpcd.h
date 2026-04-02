@@ -112,6 +112,15 @@
 #define SET_DBASE       ""
 #endif
 
+#ifdef STARROCKS
+#define GEN_QUERY_PLAN  "EXPLAIN"
+#define START_TRAN      "BEGIN;"
+#define END_TRAN        "COMMIT;"
+#define SET_OUTPUT      ""
+#define SET_ROWCOUNT    "limit %d;\n"
+#define SET_DBASE       "use %s;\n"
+#endif
+
 #ifdef 	SQLSERVER
 #define GEN_QUERY_PLAN  "set showplan on\nset noexec on\ngo\n"
 #define START_TRAN      "begin transaction\ngo\n"
