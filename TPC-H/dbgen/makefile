@@ -110,7 +110,7 @@ DATABASE=POSTGRESQL
 MACHINE = LINUX
 WORKLOAD = TPCH
 #
-CFLAGS  = -std=gnu89 -g -O2 -Wall -Wextra -Wpedantic -DDBNAME=\"dss\" -D$(MACHINE) $(if $(DATABASE),-D$(DATABASE),) -D$(WORKLOAD) -DRNG_TEST -D_FILE_OFFSET_BITS=64
+CFLAGS  = -std=gnu89 -g -O2 -w -DDBNAME=\"dss\" -D$(MACHINE) $(if $(DATABASE),-D$(DATABASE),) -D$(WORKLOAD) -DRNG_TEST -D_FILE_OFFSET_BITS=64
 LDFLAGS = -O2
 # The OBJ,EXE and LIB macros will need to be changed for compilation under
 #  Windows NT

@@ -1,4 +1,14 @@
 ref_data
 *.o
 *.dat
+*.log
 __pycache__
+
+# TPC-H generated artifacts
+TPC-H/data/
+TPC-H/logs/
+TPC-H/queries/
+TPC-H/dbgen/*.tbl
+TPC-H/dbgen/dbgen
+TPC-H/dbgen/qgen
+TPC-H/duckdb/*.duckdb
