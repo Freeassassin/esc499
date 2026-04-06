@@ -162,7 +162,7 @@ def main() -> None:
     if args.engine == "cedardb":
         dsn = (
             f"host={os.environ.get('TPCH_CEDAR_HOST', '127.0.0.1')} "
-            f"port={int(os.environ.get('TPCH_CEDAR_PORT', '5432'))} "
+            f"port={int(os.environ.get('TPCH_CEDAR_PORT', '5433'))} "
             f"dbname={os.environ.get('TPCH_CEDAR_DB', 'db')} "
             f"user={os.environ.get('TPCH_CEDAR_USER', 'admin')} "
             f"password={os.environ.get('TPCH_CEDAR_PASSWORD', 'admin')}"
