@@ -62,6 +62,31 @@ def prepare_cedardb(args: argparse.Namespace) -> None:
     print(f"schema_created:cedardb://{args.cedar_host}:{args.cedar_port}/{args.cedar_dbname}")
 
 
+def pg_conninfo(args: argparse.Namespace) -> str:
+    return (
+        f"host={args.pg_host} port={args.pg_port} "
+        f"dbname={args.pg_dbname} user={args.pg_user} password={args.pg_password}"
+    )
+
+
+def prepare_postgresql(args: argparse.Namespace) -> None:
+    tpcds_tables = [
+        "store_sales", "catalog_sales", "web_sales",
+        "store_returns", "catalog_returns", "web_returns",
+        "inventory", "catalog_page", "promotion", "web_page",
+        "household_demographics", "web_site", "customer", "call_center", "store",
+        "item", "income_band", "reason", "time_dim", "ship_mode", "warehouse",
+        "date_dim", "customer_demographics", "customer_address", "dbgen_version",
+    ]
+    ddl_sql = DDL_PATH.read_text(encoding="utf-8")
+    with psycopg.connect(pg_conninfo(args), autocommit=True) as conn:
+        with conn.cursor() as cur:
+            for table in tpcds_tables:
+                cur.execute(f'DROP TABLE IF EXISTS "{table}" CASCADE')  # type: ignore[arg-type]
+            cur.execute(ddl_sql)  # type: ignore[arg-type]
+    print(f"schema_created:postgresql://{args.pg_host}:{args.pg_port}/{args.pg_dbname}")
+
+
 def prepare_starrocks(args: argparse.Namespace) -> None:
     wait_for_frontend(args.starrocks_host, args.starrocks_port, args.starrocks_user, args.starrocks_password)
     ensure_backend(
@@ -95,7 +120,7 @@ def prepare_starrocks(args: argparse.Namespace) -> None:
 def main() -> None:
     defaults = default_config()
     parser = argparse.ArgumentParser(description="Prepare TPC-DS schema for one engine")
-    parser.add_argument("--engine", required=True, choices=["duckdb", "cedardb", "starrocks"])
+    parser.add_argument("--engine", required=True, choices=["duckdb", "cedardb", "starrocks", "postgresql"])
     parser.add_argument("--scale", type=int, required=True)
     parser.add_argument("--threads", type=int, default=4)
 
@@ -104,6 +129,12 @@ def main() -> None:
     parser.add_argument("--cedar-dbname", default=os.environ.get("CEDAR_DB", "db"))
     parser.add_argument("--cedar-user", default=os.environ.get("CEDAR_USER", "admin"))
     parser.add_argument("--cedar-password", default=os.environ.get("CEDAR_PASS", "admin"))
+
+    parser.add_argument("--pg-host", default=os.environ.get("TPCDS_PGHOST", "127.0.0.1"))
+    parser.add_argument("--pg-port", type=int, default=int(os.environ.get("TPCDS_PGPORT", "5432")))
+    parser.add_argument("--pg-dbname", default=os.environ.get("TPCDS_PGDATABASE", "mydb"))
+    parser.add_argument("--pg-user", default=os.environ.get("TPCDS_PGUSER", "myuser"))
+    parser.add_argument("--pg-password", default=os.environ.get("TPCDS_PGPASSWORD", "mypassword"))
 
     parser.add_argument("--starrocks-host", default=defaults["mysql_host"])
     parser.add_argument("--starrocks-port", type=int, default=defaults["mysql_port"])
@@ -118,6 +149,8 @@ def main() -> None:
         prepare_duckdb(args.scale, args.threads)
     elif args.engine == "cedardb":
         prepare_cedardb(args)
+    elif args.engine == "postgresql":
+        prepare_postgresql(args)
     else:
         prepare_starrocks(args)
 

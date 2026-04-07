@@ -1,6 +1,6 @@
 # TPC-DS Unified Pipeline
 
-TPC-DS now uses one shared pipeline for DuckDB, CedarDB, and StarRocks.
+TPC-DS now uses one shared pipeline for DuckDB, CedarDB, StarRocks, and PostgreSQL.
 
 ## Commands
 
@@ -17,6 +17,7 @@ Run from repository root:
 ./TPC-DS/run.sh pipeline --engine duckdb --scale 1 --stream 1
 ./TPC-DS/run.sh pipeline --engine cedardb --scale 1 --stream 1
 ./TPC-DS/run.sh pipeline --engine starrocks --scale 1 --stream 1
+./TPC-DS/run.sh pipeline --engine postgresql --scale 1 --stream 1
 ```
 
 ## Design
@@ -52,3 +53,11 @@ StarRocks defaults use:
 - `TPCDS_STARROCKS_PASSWORD` (default empty)
 - `TPCDS_STARROCKS_DB` (default `tpcds`)
 - `TPCDS_STARROCKS_BACKEND` (default `be:9050`)
+
+PostgreSQL defaults use:
+
+- `TPCDS_PGHOST` (default `127.0.0.1`)
+- `TPCDS_PGPORT` (default `5432`)
+- `TPCDS_PGDATABASE` (default `mydb`)
+- `TPCDS_PGUSER` (default `myuser`)
+- `TPCDS_PGPASSWORD` (default `mypassword`)

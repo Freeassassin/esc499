@@ -98,6 +98,40 @@ def load_cedardb(args: argparse.Namespace, data_dir: Path) -> None:
     print(f"tables_loaded:{loaded}")
 
 
+def pg_conninfo(args: argparse.Namespace) -> str:
+    return (
+        f"host={args.pg_host} port={args.pg_port} "
+        f"dbname={args.pg_dbname} user={args.pg_user} password={args.pg_password}"
+    )
+
+
+def load_postgresql(args: argparse.Namespace, data_dir: Path) -> None:
+    dat_files = sorted(data_dir.glob("*.dat"))
+    if not dat_files:
+        raise RuntimeError(f"No .dat files found in {data_dir}")
+
+    with psycopg.connect(pg_conninfo(args), autocommit=True) as conn:
+        loaded = 0
+        for dat_file in dat_files:
+            table = dat_file.stem
+            copy_sql = (
+                f'COPY "{table}" FROM STDIN '
+                "WITH (FORMAT CSV, DELIMITER '|', HEADER FALSE, NULL '')"
+            )
+            with conn.cursor() as cur:
+                with cur.copy(copy_sql) as copy:  # type: ignore[arg-type]
+                    with dat_file.open("rb") as fh:
+                        for raw_line in fh:
+                            line = raw_line.rstrip(b"\r\n")
+                            if line.endswith(b"|"):
+                                line = line[:-1]
+                            copy.write(line + b"\n")
+            loaded += 1
+            print(f"loaded:{table}")
+
+    print(f"tables_loaded:{loaded}")
+
+
 def put_stream_load(url: str, headers: dict[str, str], data_path: Path) -> requests.Response:
     with data_path.open("rb") as data_file:
         return requests.put(
@@ -164,7 +198,7 @@ def load_starrocks(args: argparse.Namespace, data_dir: Path) -> None:
 def main() -> None:
     defaults = default_config()
     parser = argparse.ArgumentParser(description="Load shared generated TPC-DS data into one engine")
-    parser.add_argument("--engine", required=True, choices=["duckdb", "cedardb", "starrocks"])
+    parser.add_argument("--engine", required=True, choices=["duckdb", "cedardb", "starrocks", "postgresql"])
     parser.add_argument("--scale", type=int, required=True)
     parser.add_argument("--threads", type=int, default=4)
 
@@ -173,6 +207,12 @@ def main() -> None:
     parser.add_argument("--cedar-dbname", default=os.environ.get("CEDAR_DB", "db"))
     parser.add_argument("--cedar-user", default=os.environ.get("CEDAR_USER", "admin"))
     parser.add_argument("--cedar-password", default=os.environ.get("CEDAR_PASS", "admin"))
+
+    parser.add_argument("--pg-host", default=os.environ.get("TPCDS_PGHOST", "127.0.0.1"))
+    parser.add_argument("--pg-port", type=int, default=int(os.environ.get("TPCDS_PGPORT", "5432")))
+    parser.add_argument("--pg-dbname", default=os.environ.get("TPCDS_PGDATABASE", "mydb"))
+    parser.add_argument("--pg-user", default=os.environ.get("TPCDS_PGUSER", "myuser"))
+    parser.add_argument("--pg-password", default=os.environ.get("TPCDS_PGPASSWORD", "mypassword"))
 
     parser.add_argument("--starrocks-host", default=defaults["mysql_host"])
     parser.add_argument("--starrocks-port", type=int, default=defaults["mysql_port"])
@@ -195,6 +235,8 @@ def main() -> None:
         load_duckdb(args, data_dir)
     elif args.engine == "cedardb":
         load_cedardb(args, data_dir)
+    elif args.engine == "postgresql":
+        load_postgresql(args, data_dir)
     else:
         load_starrocks(args, data_dir)
 

@@ -12,7 +12,7 @@ Usage:
   ./TPC-DS/tools/generate_queries.sh --engine <engine> --scale <sf> [--stream <n>] [--seed <n>] [--force]
 
 Engines:
-  duckdb | cedardb | starrocks
+  duckdb | cedardb | starrocks | postgresql
 EOF
 }
 
@@ -59,7 +59,7 @@ if [[ -z "${engine}" || -z "${scale}" ]]; then
 fi
 
 case "${engine}" in
-  duckdb|cedardb|starrocks) ;;
+  duckdb|cedardb|starrocks|postgresql) ;;
   *)
     echo "Unsupported engine: ${engine}" >&2
     exit 1

@@ -1,19 +1,33 @@
-# TPC-DS PostgreSQL Pipeline
+# TPC-DS PostgreSQL
 
-This directory contains a repeatable PostgreSQL pipeline for TPC-DS SF1:
+PostgreSQL uses the shared TPC-DS pipeline under `TPC-DS/run.sh`.
 
-1. Build `dsdgen` and `dsqgen`
-2. Generate flat files with `dsdgen`
-3. Generate SQL with `dsqgen` using `DIALECT=postgresql` and `DIRECTORY=query_templates`
-4. Normalize generated SQL for PostgreSQL-specific syntax gaps not covered by the dialect hook
-5. Reset and create the PostgreSQL schema
-6. Bulk load all flat files with PostgreSQL `COPY`
-7. Run all 99 generated queries and persist results and timings
+## Run
 
-Run it from the workspace root with:
+From repository root:
 
 ```bash
-/home/farbod/benchmark/.venv/bin/python TPC-DS/postgresql/run_pipeline.py --scale 1
+./TPC-DS/run.sh pipeline --engine postgresql --scale 1 --stream 1
 ```
 
-Artifacts are written under `TPC-DS/postgresql/generated/sf1/`.
+## Outputs
+
+- Shared data: `TPC-DS/data/sf1`
+- Generated queries: `TPC-DS/queries/postgresql/sf1/stream1`
+- Query summary: `TPC-DS/logs/postgresql/sf1/stream1/query_summary.json`
+
+## Default Connection
+
+- Host: `127.0.0.1`
+- Port: `5432`
+- Database: `mydb`
+- User: `myuser`
+- Password: `mypassword`
+
+Environment variables:
+
+- `TPCDS_PGHOST`
+- `TPCDS_PGPORT`
+- `TPCDS_PGDATABASE`
+- `TPCDS_PGUSER`
+- `TPCDS_PGPASSWORD`

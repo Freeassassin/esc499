@@ -48,6 +48,23 @@ def load_statements(queries_dir: Path) -> list[tuple[int, str, str]]:
     return [(index + 1, merged.name, chunks[index]) for index in range(99)]
 
 
+def _fix_postgresql_lochierarchy_order_by(sql_text: str) -> str:
+    """Replace alias-in-expression ORDER BY forms that PostgreSQL rejects."""
+    fixed = re.sub(
+        r"case\s+when\s+lochierarchy\s*=\s*0\s+then\s+i_category\s+end",
+        "case when grouping(i_category)+grouping(i_class) = 0 then i_category end",
+        sql_text,
+        flags=re.IGNORECASE,
+    )
+    fixed = re.sub(
+        r"case\s+when\s+lochierarchy\s*=\s*0\s+then\s+s_state\s+end",
+        "case when grouping(s_state)+grouping(s_county) = 0 then s_state end",
+        fixed,
+        flags=re.IGNORECASE,
+    )
+    return fixed
+
+
 def normalize_sql(engine: str, sql_text: str) -> str:
     if engine == "duckdb":
         normalized = DATE_INTERVAL_RE.sub(r"\1 INTERVAL \2 DAYS", sql_text)
@@ -59,6 +76,15 @@ def normalize_sql(engine: str, sql_text: str) -> str:
             normalized,
             flags=re.IGNORECASE,
         )
+    elif engine == "postgresql":
+        normalized = DATE_INTERVAL_RE.sub(r"\1 INTERVAL '\2 days'", sql_text)
+        normalized = re.sub(
+            r"cast\(amc as decimal\(15,4\)\)\s*/\s*cast\(pmc as decimal\(15,4\)\)",
+            "cast(amc as decimal(15,4))/nullif(cast(pmc as decimal(15,4)), 0)",
+            normalized,
+            flags=re.IGNORECASE,
+        )
+        normalized = _fix_postgresql_lochierarchy_order_by(normalized)
     elif engine == "starrocks":
         normalized = DATE_INTERVAL_RE.sub(r"\1 interval \2 day", sql_text)
     else:

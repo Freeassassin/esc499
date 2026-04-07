@@ -100,6 +100,50 @@ def execute_cedardb(args: argparse.Namespace, statements: list[tuple[int, str, s
     return summary
 
 
+def pg_conninfo(args: argparse.Namespace) -> str:
+    return (
+        f"host={args.pg_host} port={args.pg_port} "
+        f"dbname={args.pg_dbname} user={args.pg_user} password={args.pg_password}"
+    )
+
+
+def execute_postgresql(args: argparse.Namespace, statements: list[tuple[int, str, str]]) -> list[dict[str, object]]:
+    summary: list[dict[str, object]] = []
+    with psycopg.connect(pg_conninfo(args)) as conn:
+        conn.autocommit = True
+        for query_id, source_file, sql_text in statements:
+            start = time.perf_counter()
+            try:
+                with conn.cursor() as cur:
+                    cur.execute(normalize_sql("postgresql", sql_text))  # type: ignore[arg-type]
+                    rows = cur.fetchall()
+                elapsed = time.perf_counter() - start
+                summary.append(
+                    {
+                        "query_id": query_id,
+                        "file": source_file,
+                        "status": "ok",
+                        "elapsed_sec": round(elapsed, 6),
+                        "row_count": len(rows),
+                    }
+                )
+                print(f"ok:q{query_id}:rows={len(rows)}:sec={elapsed:.4f}")
+            except Exception as exc:  # noqa: BLE001
+                elapsed = time.perf_counter() - start
+                summary.append(
+                    {
+                        "query_id": query_id,
+                        "file": source_file,
+                        "status": "error",
+                        "elapsed_sec": round(elapsed, 6),
+                        "error": str(exc),
+                    }
+                )
+                print(f"error:q{query_id}:sec={elapsed:.4f}:{exc}")
+
+    return summary
+
+
 def execute_starrocks(args: argparse.Namespace, statements: list[tuple[int, str, str]]) -> list[dict[str, object]]:
     summary: list[dict[str, object]] = []
     with mysql_conn(
@@ -148,7 +192,7 @@ def execute_starrocks(args: argparse.Namespace, statements: list[tuple[int, str,
 def main() -> None:
     defaults = default_config()
     parser = argparse.ArgumentParser(description="Run generated TPC-DS queries for one engine")
-    parser.add_argument("--engine", required=True, choices=["duckdb", "cedardb", "starrocks"])
+    parser.add_argument("--engine", required=True, choices=["duckdb", "cedardb", "starrocks", "postgresql"])
     parser.add_argument("--scale", type=int, required=True)
     parser.add_argument("--stream", type=int, default=1)
     parser.add_argument("--threads", type=int, default=4)
@@ -158,6 +202,12 @@ def main() -> None:
     parser.add_argument("--cedar-dbname", default=os.environ.get("CEDAR_DB", "db"))
     parser.add_argument("--cedar-user", default=os.environ.get("CEDAR_USER", "admin"))
     parser.add_argument("--cedar-password", default=os.environ.get("CEDAR_PASS", "admin"))
+
+    parser.add_argument("--pg-host", default=os.environ.get("TPCDS_PGHOST", "127.0.0.1"))
+    parser.add_argument("--pg-port", type=int, default=int(os.environ.get("TPCDS_PGPORT", "5432")))
+    parser.add_argument("--pg-dbname", default=os.environ.get("TPCDS_PGDATABASE", "mydb"))
+    parser.add_argument("--pg-user", default=os.environ.get("TPCDS_PGUSER", "myuser"))
+    parser.add_argument("--pg-password", default=os.environ.get("TPCDS_PGPASSWORD", "mypassword"))
 
     parser.add_argument("--starrocks-host", default=defaults["mysql_host"])
     parser.add_argument("--starrocks-port", type=int, default=defaults["mysql_port"])
@@ -178,6 +228,8 @@ def main() -> None:
         summary = execute_duckdb(args, statements)
     elif args.engine == "cedardb":
         summary = execute_cedardb(args, statements)
+    elif args.engine == "postgresql":
+        summary = execute_postgresql(args, statements)
     else:
         summary = execute_starrocks(args, statements)
 

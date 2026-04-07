@@ -16,7 +16,7 @@ Usage:
   ./TPC-DS/run.sh pipeline --engine <engine> --scale <sf> [--stream <n>] [--seed <n>] [--threads <n>] [--force-data] [--force-queries]
 
 Engines:
-  duckdb | cedardb | starrocks
+  duckdb | cedardb | starrocks | postgresql
 EOF
 }
 
@@ -32,7 +32,7 @@ require_arg() {
 
 validate_engine() {
   case "$1" in
-    duckdb|cedardb|starrocks) ;;
+    duckdb|cedardb|starrocks|postgresql) ;;
     *)
       echo "Unsupported engine: $1" >&2
       usage
@@ -44,6 +44,9 @@ validate_engine() {
 ensure_services() {
   local engine="$1"
   case "${engine}" in
+    postgresql)
+      (cd "${SCRIPT_DIR}/.." && docker compose up -d db)
+      ;;
     cedardb)
       (cd "${SCRIPT_DIR}/.." && docker compose up -d cedardb)
       ;;
