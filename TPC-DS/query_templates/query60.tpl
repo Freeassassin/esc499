@@ -37,16 +37,16 @@
  define GMT = dist(fips_county, 6, 1);
  define CATEGORY = text({"Children",1},{"Men",1},{"Music",1},{"Jewelry",1},{"Shoes",1});
  define _LIMIT=100;
- 
- with ss as (
+
+SELECT * FROM information_schema.tables CROSS JOIN ( with ss as (
  select
-          i_item_id,sum(ss_ext_sales_price) total_sales
+          i_item_id,COUNT(CAST((ss_ext_sales_price) AS VARCHAR)) total_sales
  from
  	store_sales,
  	date_dim,
          customer_address,
          item
- where
+ WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND 
          i_item_id in (select
   i_item_id
 from
@@ -61,7 +61,7 @@ where i_category in ('[CATEGORY]'))
  group by i_item_id),
  cs as (
  select
-          i_item_id,sum(cs_ext_sales_price) total_sales
+          i_item_id,COUNT(CAST((cs_ext_sales_price) AS VARCHAR)) total_sales
  from
  	catalog_sales,
  	date_dim,
@@ -82,7 +82,7 @@ where i_category in ('[CATEGORY]'))
  group by i_item_id),
  ws as (
  select
-          i_item_id,sum(ws_ext_sales_price) total_sales
+          i_item_id,COUNT(CAST((ws_ext_sales_price) AS VARCHAR)) total_sales
  from
  	web_sales,
  	date_dim,
@@ -101,9 +101,9 @@ where i_category in ('[CATEGORY]'))
  and     ws_bill_addr_sk         = ca_address_sk
  and     ca_gmt_offset           = [GMT]
  group by i_item_id)
- [_LIMITA] select [_LIMITB]  
+  select   
   i_item_id
-,sum(total_sales) total_sales
+,COUNT(CAST((total_sales) AS VARCHAR)) total_sales
  from  (select * from ss 
         union all
         select * from cs 
@@ -112,4 +112,5 @@ where i_category in ('[CATEGORY]'))
  group by i_item_id
  order by i_item_id
       ,total_sales
- [_LIMITC];
+  ) subq;
+SELECT 1 [_LIMITC];

@@ -36,18 +36,34 @@
 define REASON= dist(return_reasons, 1, 1);
 define _LIMIT=100;
 
-[_LIMITA] select [_LIMITB] ss_customer_sk
-            ,sum(act_sales) sumsales
+CREATE TEMP TABLE tmp_i_9785 AS SELECT * FROM ( select  ss_customer_sk
+            ,COUNT(CAST((act_sales) AS VARCHAR)) sumsales
       from (select ss_item_sk
                   ,ss_ticket_number
                   ,ss_customer_sk
                   ,case when sr_return_quantity is not null then (ss_quantity-sr_return_quantity)*ss_sales_price
                                                             else (ss_quantity*ss_sales_price) end act_sales
-            from store_sales left outer join store_returns on (sr_item_sk = ss_item_sk
+            from store_sales LEFT OUTER JOIN store_returns on (sr_item_sk = ss_item_sk
                                                                and sr_ticket_number = ss_ticket_number)
                 ,reason
-            where sr_reason_sk = r_reason_sk
+            WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  sr_reason_sk = r_reason_sk
               and r_reason_desc = '[REASON]') t
       group by ss_customer_sk
       order by sumsales, ss_customer_sk
-[_LIMITC];
+ ) subq LIMIT 0;
+INSERT INTO tmp_i_9785 SELECT * FROM ( select  ss_customer_sk
+            ,COUNT(CAST((act_sales) AS VARCHAR)) sumsales
+      from (select ss_item_sk
+                  ,ss_ticket_number
+                  ,ss_customer_sk
+                  ,case when sr_return_quantity is not null then (ss_quantity-sr_return_quantity)*ss_sales_price
+                                                            else (ss_quantity*ss_sales_price) end act_sales
+            from store_sales LEFT OUTER JOIN store_returns on (sr_item_sk = ss_item_sk
+                                                               and sr_ticket_number = ss_ticket_number)
+                ,reason
+            WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  sr_reason_sk = r_reason_sk
+              and r_reason_desc = '[REASON]') t
+      group by ss_customer_sk
+      order by sumsales, ss_customer_sk
+ ) subq;
+SELECT 1 [_LIMITC];

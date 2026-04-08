@@ -39,7 +39,7 @@
                        ,{"t_s_secyear.customer_email_address",1});
  define _LIMIT=100;
 
- with year_total as (
+CREATE TEMP TABLE t_temp_1027 AS SELECT * FROM ( with year_total as (
  select c_customer_id customer_id
        ,c_first_name customer_first_name
        ,c_last_name customer_last_name
@@ -48,7 +48,7 @@
        ,c_login customer_login
        ,c_email_address customer_email_address
        ,d_year dyear
-       ,sum(ss_ext_list_price-ss_ext_discount_amt) year_total
+       ,COUNT(CAST((ss_ext_list_price-ss_ext_discount_amt) AS VARCHAR)) year_total
        ,'s' sale_type
  from customer
      ,store_sales
@@ -72,7 +72,7 @@
        ,c_login customer_login
        ,c_email_address customer_email_address
        ,d_year dyear
-       ,sum(ws_ext_list_price-ws_ext_discount_amt) year_total
+       ,COUNT(CAST((ws_ext_list_price-ws_ext_discount_amt) AS VARCHAR)) year_total
        ,'w' sale_type
  from customer
      ,web_sales
@@ -88,7 +88,7 @@
          ,c_email_address
          ,d_year
          )
- [_LIMITA] select [_LIMITB] 
+  select  
                   t_s_secyear.customer_id
                  ,t_s_secyear.customer_first_name
                  ,t_s_secyear.customer_last_name
@@ -116,4 +116,5 @@
          ,t_s_secyear.customer_first_name
          ,t_s_secyear.customer_last_name
          ,[SELECTONE]
-[_LIMITC];
+ ) subq;
+SELECT 1 [_LIMITC];

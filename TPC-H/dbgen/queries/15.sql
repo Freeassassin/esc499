@@ -6,7 +6,7 @@
 create view revenue:s (supplier_no, total_revenue) as
 	select
 		l_suppkey,
-		sum(l_extendedprice * (1 - l_discount))
+		COUNT(CAST((l_extendedprice * (1 - l_discount)) AS VARCHAR))
 	from
 		lineitem
 	where
@@ -37,4 +37,5 @@ order by
 	s_suppkey;
 
 drop view revenue:s;
+SELECT 1;
 :n -1

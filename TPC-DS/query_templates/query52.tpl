@@ -36,14 +36,14 @@
  define YEAR = random(1998,2002,uniform);
  define _LIMIT=100;
 
-[_LIMITA]  select [_LIMITB] dt.d_year
+CREATE TEMP TABLE tmp_u_2343 AS SELECT *, -1 as _dummy_update_col FROM ( select  dt.d_year
  	,item.i_brand_id brand_id
  	,item.i_brand brand
- 	,sum(ss_ext_sales_price) ext_price
+ 	,COUNT(CAST((ss_ext_sales_price) AS VARCHAR)) ext_price
  from date_dim dt
      ,store_sales
      ,item
- where dt.d_date_sk = store_sales.ss_sold_date_sk
+ WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  dt.d_date_sk = store_sales.ss_sold_date_sk
     and store_sales.ss_item_sk = item.i_item_sk
     and item.i_manager_id = 1
     and dt.d_moy=[MONTH]
@@ -54,6 +54,6 @@
  order by dt.d_year
  	,ext_price desc
  	,brand_id
-[_LIMITC] ;
-
-
+  ) subq;
+UPDATE tmp_u_2343 SET _dummy_update_col = 1 WHERE 1=0;
+SELECT 1 [_LIMITC];

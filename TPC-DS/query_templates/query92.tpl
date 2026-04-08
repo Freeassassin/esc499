@@ -38,13 +38,13 @@ define YEAR  = random(1998,2002,uniform);
 define WSDATE = date([YEAR]+"-01-01",[YEAR]+"-04-01",sales);
 define _LIMIT=100;
 
-[_LIMITA] select [_LIMITB] 
-   sum(ws_ext_discount_amt)  as "Excess Discount Amount" 
+CREATE TEMP TABLE tmp_u_4044 AS SELECT *, -1 as _dummy_update_col FROM ( select  
+   COUNT(CAST((ws_ext_discount_amt) AS VARCHAR))  as "Excess Discount Amount" 
 from 
     web_sales 
    ,item 
    ,date_dim
-where
+WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND 
 i_manufact_id = [IMID]
 and i_item_sk = ws_item_sk 
 and d_date between '[WSDATE]' and 
@@ -63,6 +63,7 @@ and ws_ext_discount_amt
                              (cast('[WSDATE]' as date) + 90 days)
           and d_date_sk = ws_sold_date_sk 
       ) 
-order by sum(ws_ext_discount_amt)
-[_LIMITC]; 
-
+order by COUNT(CAST((ws_ext_discount_amt) AS VARCHAR))
+ ) subq;
+UPDATE tmp_u_4044 SET _dummy_update_col = 1 WHERE 1=0;
+SELECT 1 [_LIMITC];

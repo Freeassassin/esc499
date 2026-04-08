@@ -34,16 +34,16 @@
 -- 
  define DMS = random(1176,1224,uniform);
  define _LIMIT=100;
- 
- [_LIMITA] select [_LIMITB] 
-    sum(ss_net_profit) as total_sum
+
+SELECT * FROM information_schema.tables CROSS JOIN ( select  
+    COUNT(CAST((ss_net_profit) AS VARCHAR)) as total_sum
    ,s_state
    ,s_county
    ,grouping(s_state)+grouping(s_county) as lochierarchy
    ,rank() over (
  	partition by grouping(s_state)+grouping(s_county),
  	case when grouping(s_county) = 0 then s_state end 
- 	order by sum(ss_net_profit) desc) as rank_within_parent
+ 	order by COUNT(CAST((ss_net_profit) AS VARCHAR)) desc) as rank_within_parent
  from
     store_sales
    ,date_dim       d1
@@ -55,7 +55,7 @@
  and s_state in
              ( select s_state
                from  (select s_state as s_state,
- 			    rank() over ( partition by s_state order by sum(ss_net_profit) desc) as ranking
+ 			    rank() over ( partition by s_state order by COUNT(CAST((ss_net_profit) AS VARCHAR)) desc) as ranking
                       from   store_sales, store, date_dim
                       where  d_month_seq between [DMS] and [DMS]+11
  			    and d_date_sk = ss_sold_date_sk
@@ -69,5 +69,5 @@
    lochierarchy desc
   ,case when lochierarchy = 0 then s_state end
   ,rank_within_parent
- [_LIMITC];
-
+  ) subq;
+SELECT 1 [_LIMITC];

@@ -38,10 +38,10 @@ define COUNTY=random(1, rowcount("active_counties", "store"), uniform);
 define GMT=distmember(fips_county,[COUNTY], 6);
 define CATEGORY = text({"Books",1},{"Home",1},{"Electronics",1},{"Jewelry",1},{"Sports",1});
 define _LIMIT=100;
- 
- with ss as (
+
+CREATE TEMP TABLE tmp_u_2188 AS SELECT *, -1 as _dummy_update_col FROM ( with ss as (
  select
-          i_manufact_id,sum(ss_ext_sales_price) total_sales
+          i_manufact_id,COUNT(CAST((ss_ext_sales_price) AS VARCHAR)) total_sales
  from
  	store_sales,
  	date_dim,
@@ -62,7 +62,7 @@ where i_category in ('[CATEGORY]'))
  group by i_manufact_id),
  cs as (
  select
-          i_manufact_id,sum(cs_ext_sales_price) total_sales
+          i_manufact_id,COUNT(CAST((cs_ext_sales_price) AS VARCHAR)) total_sales
  from
  	catalog_sales,
  	date_dim,
@@ -83,7 +83,7 @@ where i_category in ('[CATEGORY]'))
  group by i_manufact_id),
  ws as (
  select
-          i_manufact_id,sum(ws_ext_sales_price) total_sales
+          i_manufact_id,COUNT(CAST((ws_ext_sales_price) AS VARCHAR)) total_sales
  from
  	web_sales,
  	date_dim,
@@ -102,7 +102,7 @@ where i_category in ('[CATEGORY]'))
  and     ws_bill_addr_sk         = ca_address_sk
  and     ca_gmt_offset           = [GMT]
  group by i_manufact_id)
- [_LIMITA] select [_LIMITB] i_manufact_id ,sum(total_sales) total_sales
+  select  i_manufact_id ,COUNT(CAST((total_sales) AS VARCHAR)) total_sales
  from  (select * from ss 
         union all
         select * from cs 
@@ -110,4 +110,6 @@ where i_category in ('[CATEGORY]'))
         select * from ws) tmp1
  group by i_manufact_id
  order by total_sales
-[_LIMITC];
+ ) subq;
+UPDATE tmp_u_2188 SET _dummy_update_col = 1 WHERE 1=0;
+SELECT 1 [_LIMITC];

@@ -4,7 +4,7 @@
 -- Approved February 1998
 :x
 :o
-select
+CREATE TEMP TABLE tmp_d_3426 AS SELECT * FROM ( select
 	s_name,
 	s_address
 from
@@ -27,7 +27,7 @@ where
 			)
 			and ps_availqty > (
 				select
-					0.5 * sum(l_quantity)
+					0.5 * COUNT(CAST((l_quantity) AS VARCHAR))
 				from
 					lineitem
 				where
@@ -40,5 +40,7 @@ where
 	and s_nationkey = n_nationkey
 	and n_name = ':3'
 order by
-	s_name;
+	s_name ) subq;
+DELETE FROM tmp_d_3426 WHERE 1=0;
+SELECT 1;
 :n -1

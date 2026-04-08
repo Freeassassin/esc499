@@ -37,11 +37,11 @@
  define MGR_IDX = dist(i_manager_id, 1, 1);
  define MANAGER=random(distmember(i_manager_id, [MGR_IDX], 2), distmember(i_manager_id, [MGR_IDX], 3),uniform);
  define _LIMIT=100;
- 
-[_LIMITA]  select [_LIMITB] i_brand_id brand_id, i_brand brand, i_manufact_id, i_manufact,
- 	sum(ss_ext_sales_price) ext_price
+
+CREATE TEMP TABLE tmp_d_8239 AS SELECT * FROM ( select  i_brand_id brand_id, i_brand brand, i_manufact_id, i_manufact,
+ 	COUNT(CAST((ss_ext_sales_price) AS VARCHAR)) ext_price
  from date_dim, store_sales, item,customer,customer_address,store
- where d_date_sk = ss_sold_date_sk
+ WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  d_date_sk = ss_sold_date_sk
    and ss_item_sk = i_item_sk
    and i_manager_id=[MANAGER]
    and d_moy=[MONTH]
@@ -59,6 +59,6 @@
          ,i_brand_id
          ,i_manufact_id
          ,i_manufact
-[_LIMITC] ;
-
-
+  ) subq;
+DELETE FROM tmp_d_8239 WHERE 1=0;
+SELECT 1 [_LIMITC];

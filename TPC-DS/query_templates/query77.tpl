@@ -35,15 +35,15 @@
  define YEAR = random(1998, 2002, uniform);
  define SALES_DATE=date([YEAR]+"-08-01",[YEAR]+"-08-30",sales);
  define _LIMIT=100;
- 
- with ss as
+
+CREATE TEMP TABLE tmp_u_6147 AS SELECT *, -1 as _dummy_update_col FROM ( with ss as
  (select s_store_sk,
-         sum(ss_ext_sales_price) as sales,
-         sum(ss_net_profit) as profit
+         COUNT(CAST((ss_ext_sales_price) AS VARCHAR)) as sales,
+         COUNT(CAST((ss_net_profit) AS VARCHAR)) as profit
  from store_sales,
       date_dim,
       store
- where ss_sold_date_sk = d_date_sk
+ WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  ss_sold_date_sk = d_date_sk
        and d_date between cast('[SALES_DATE]' as date) 
                   and (cast('[SALES_DATE]' as date) +  30 days) 
        and ss_store_sk = s_store_sk
@@ -51,8 +51,8 @@
  ,
  sr as
  (select s_store_sk,
-         sum(sr_return_amt) as returns,
-         sum(sr_net_loss) as profit_loss
+         COUNT(CAST((sr_return_amt) AS VARCHAR)) as returns,
+         COUNT(CAST((sr_net_loss) AS VARCHAR)) as profit_loss
  from store_returns,
       date_dim,
       store
@@ -63,8 +63,8 @@
  group by s_store_sk), 
  cs as
  (select cs_call_center_sk,
-        sum(cs_ext_sales_price) as sales,
-        sum(cs_net_profit) as profit
+        COUNT(CAST((cs_ext_sales_price) AS VARCHAR)) as sales,
+        COUNT(CAST((cs_net_profit) AS VARCHAR)) as profit
  from catalog_sales,
       date_dim
  where cs_sold_date_sk = d_date_sk
@@ -74,8 +74,8 @@
  ), 
  cr as
  (select cr_call_center_sk,
-         sum(cr_return_amount) as returns,
-         sum(cr_net_loss) as profit_loss
+         COUNT(CAST((cr_return_amount) AS VARCHAR)) as returns,
+         COUNT(CAST((cr_net_loss) AS VARCHAR)) as profit_loss
  from catalog_returns,
       date_dim
  where cr_returned_date_sk = d_date_sk
@@ -85,8 +85,8 @@
  ), 
  ws as
  ( select wp_web_page_sk,
-        sum(ws_ext_sales_price) as sales,
-        sum(ws_net_profit) as profit
+        COUNT(CAST((ws_ext_sales_price) AS VARCHAR)) as sales,
+        COUNT(CAST((ws_net_profit) AS VARCHAR)) as profit
  from web_sales,
       date_dim,
       web_page
@@ -97,8 +97,8 @@
  group by wp_web_page_sk), 
  wr as
  (select wp_web_page_sk,
-        sum(wr_return_amt) as returns,
-        sum(wr_net_loss) as profit_loss
+        COUNT(CAST((wr_return_amt) AS VARCHAR)) as returns,
+        COUNT(CAST((wr_net_loss) AS VARCHAR)) as profit_loss
  from web_returns,
       date_dim,
       web_page
@@ -107,18 +107,18 @@
                   and (cast('[SALES_DATE]' as date) +  30 days)
        and wr_web_page_sk = wp_web_page_sk
  group by wp_web_page_sk)
- [_LIMITA] select [_LIMITB] channel
+  select  channel
         , id
-        , sum(sales) as sales
-        , sum(returns) as returns
-        , sum(profit) as profit
+        , COUNT(CAST((sales) AS VARCHAR)) as sales
+        , COUNT(CAST((returns) AS VARCHAR)) as returns
+        , COUNT(CAST((profit) AS VARCHAR)) as profit
  from 
  (select 'store channel' as channel
         , ss.s_store_sk as id
         , sales
         , coalesce(returns, 0) as returns
         , (profit - coalesce(profit_loss,0)) as profit
- from   ss left join sr
+ from   ss LEFT OUTER JOIN sr
         on  ss.s_store_sk = sr.s_store_sk
  union all
  select 'catalog channel' as channel
@@ -134,12 +134,12 @@
         , sales
         , coalesce(returns, 0) returns
         , (profit - coalesce(profit_loss,0)) as profit
- from   ws left join wr
+ from   ws LEFT OUTER JOIN wr
         on  ws.wp_web_page_sk = wr.wp_web_page_sk
  ) x
  group by rollup (channel, id)
  order by channel
          ,id
- [_LIMITC];
- 
-
+  ) subq;
+UPDATE tmp_u_6147 SET _dummy_update_col = 1 WHERE 1=0;
+SELECT 1 [_LIMITC];

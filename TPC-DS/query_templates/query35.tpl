@@ -38,8 +38,8 @@
  define AGGTWO= text({"sum",1},{"min",1},{"max",1},{"avg",1},{"stddev_samp",1}); 
  define AGGTHREE= text({"sum",1},{"min",1},{"max",1},{"avg",1},{"stddev_samp",1}); 
  define _LIMIT=100;
- 
- [_LIMITA] select [_LIMITB]  
+
+SELECT * FROM information_schema.tables CROSS JOIN ( select   
   ca_state,
   cd_gender,
   cd_marital_status,
@@ -93,6 +93,5 @@
           cd_dep_count,
           cd_dep_employed_count,
           cd_dep_college_count
- [_LIMITC];
- 
-
+  ) subq;
+SELECT 1 [_LIMITC];

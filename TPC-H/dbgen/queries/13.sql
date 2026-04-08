@@ -13,7 +13,7 @@ from
 			c_custkey,
 			count(o_orderkey)
 		from
-			customer left outer join orders on
+			customer LEFT OUTER JOIN orders on
 				c_custkey = o_custkey
 				and o_comment not like '%:1%:2%'
 		group by
@@ -24,4 +24,5 @@ group by
 order by
 	custdist desc,
 	c_count desc;
+SELECT 1;
 :n -1

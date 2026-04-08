@@ -38,15 +38,15 @@ define MONTH = random(2,5,uniform);
 define STATE = dist(fips_county,3,1);
 define _LIMIT=100;
 
-with ws_wh as
+CREATE TEMP TABLE tmp_i_4728 AS SELECT * FROM ( with ws_wh as
 (select ws1.ws_order_number,ws1.ws_warehouse_sk wh1,ws2.ws_warehouse_sk wh2
  from web_sales ws1,web_sales ws2
  where ws1.ws_order_number = ws2.ws_order_number
    and ws1.ws_warehouse_sk <> ws2.ws_warehouse_sk)
-[_LIMITA] select [_LIMITB] 
+ select  
    count(distinct ws_order_number) as "order count"
-  ,sum(ws_ext_ship_cost) as "total shipping cost"
-  ,sum(ws_net_profit) as "total net profit"
+  ,COUNT(CAST((ws_ext_ship_cost) AS VARCHAR)) as "total shipping cost"
+  ,COUNT(CAST((ws_net_profit) AS VARCHAR)) as "total net profit"
 from
    web_sales ws1
   ,date_dim
@@ -66,6 +66,34 @@ and ws1.ws_order_number in (select wr_order_number
                             from web_returns,ws_wh
                             where wr_order_number = ws_wh.ws_order_number)
 order by count(distinct ws_order_number)
-[_LIMITC];
-
-
+ ) subq LIMIT 0;
+INSERT INTO tmp_i_4728 SELECT * FROM ( with ws_wh as
+(select ws1.ws_order_number,ws1.ws_warehouse_sk wh1,ws2.ws_warehouse_sk wh2
+ from web_sales ws1,web_sales ws2
+ where ws1.ws_order_number = ws2.ws_order_number
+   and ws1.ws_warehouse_sk <> ws2.ws_warehouse_sk)
+ select  
+   count(distinct ws_order_number) as "order count"
+  ,COUNT(CAST((ws_ext_ship_cost) AS VARCHAR)) as "total shipping cost"
+  ,COUNT(CAST((ws_net_profit) AS VARCHAR)) as "total net profit"
+from
+   web_sales ws1
+  ,date_dim
+  ,customer_address
+  ,web_site
+where
+    d_date between '[YEAR]-[MONTH]-01' and 
+           (cast('[YEAR]-[MONTH]-01' as date) + 60 days)
+and ws1.ws_ship_date_sk = d_date_sk
+and ws1.ws_ship_addr_sk = ca_address_sk
+and ca_state = '[STATE]'
+and ws1.ws_web_site_sk = web_site_sk
+and web_company_name = 'pri'
+and ws1.ws_order_number in (select ws_order_number
+                            from ws_wh)
+and ws1.ws_order_number in (select wr_order_number
+                            from web_returns,ws_wh
+                            where wr_order_number = ws_wh.ws_order_number)
+order by count(distinct ws_order_number)
+ ) subq;
+SELECT 1 [_LIMITC];

@@ -4,7 +4,7 @@
 -- Approved February 1998
 :x
 :o
-select
+SELECT * FROM information_schema.tables CROSS JOIN ( select
 	p_brand,
 	p_type,
 	p_size,
@@ -12,7 +12,7 @@ select
 from
 	partsupp,
 	part
-where
+WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND 
 	p_partkey = ps_partkey
 	and p_brand <> ':1'
 	and p_type not like ':2%'
@@ -33,5 +33,6 @@ order by
 	supplier_cnt desc,
 	p_brand,
 	p_type,
-	p_size;
+	p_size ) subq;
+SELECT 1;
 :n -1

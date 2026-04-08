@@ -7,7 +7,7 @@
 select
 	cntrycode,
 	count(*) as numcust,
-	sum(c_acctbal) as totacctbal
+	COUNT(CAST((c_acctbal) AS VARCHAR)) as totacctbal
 from
 	(
 		select
@@ -15,7 +15,7 @@ from
 			c_acctbal
 		from
 			customer
-		where
+		WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND 
 			substring(c_phone from 1 for 2) in
 				(':1', ':2', ':3', ':4', ':5', ':6', ':7')
 			and c_acctbal > (
@@ -41,4 +41,5 @@ group by
 	cntrycode
 order by
 	cntrycode;
+SELECT 1;
 :n -1

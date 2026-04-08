@@ -43,22 +43,22 @@
  define STATE_G=distmember(fips_county,[STATENUMBER.7], 3);
  define STATE_H=distmember(fips_county,[STATENUMBER.8], 3);
  define _LIMIT=100;
- 
- [_LIMITA] select [_LIMITB] 
-    sum(ss_net_profit)/sum(ss_ext_sales_price) as gross_margin
+
+SELECT * FROM information_schema.tables CROSS JOIN ( select  
+    COUNT(CAST((ss_net_profit) AS VARCHAR))/COUNT(CAST((ss_ext_sales_price) AS VARCHAR)) as gross_margin
    ,i_category
    ,i_class
    ,grouping(i_category)+grouping(i_class) as lochierarchy
    ,rank() over (
  	partition by grouping(i_category)+grouping(i_class),
  	case when grouping(i_class) = 0 then i_category end 
- 	order by sum(ss_net_profit)/sum(ss_ext_sales_price) asc) as rank_within_parent
+ 	order by COUNT(CAST((ss_net_profit) AS VARCHAR))/COUNT(CAST((ss_ext_sales_price) AS VARCHAR)) asc) as rank_within_parent
  from
     store_sales
    ,date_dim       d1
    ,item
    ,store
- where
+ WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND 
     d1.d_year = [YEAR] 
  and d1.d_date_sk = ss_sold_date_sk
  and i_item_sk  = ss_item_sk 
@@ -70,5 +70,5 @@
    lochierarchy desc
   ,case when lochierarchy = 0 then i_category end
   ,rank_within_parent
-  [_LIMITC];
-
+   ) subq;
+SELECT 1 [_LIMITC];

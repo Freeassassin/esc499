@@ -36,10 +36,10 @@
 define DMS = random(1176,1224,uniform);
 define _LIMIT=100;
 
-[_LIMITA] select [_LIMITB] * from 
+CREATE TEMP TABLE t_temp_4228 AS SELECT * FROM ( select  * from 
 (select i_manufact_id,
-sum(ss_sales_price) sum_sales,
-avg(sum(ss_sales_price)) over (partition by i_manufact_id) avg_quarterly_sales
+COUNT(CAST((ss_sales_price) AS VARCHAR)) sum_sales,
+avg(COUNT(CAST((ss_sales_price) AS VARCHAR))) over (partition by i_manufact_id) avg_quarterly_sales
 from item, store_sales, date_dim, store
 where ss_item_sk = i_item_sk and
 ss_sold_date_sk = d_date_sk and
@@ -60,5 +60,5 @@ where case when avg_quarterly_sales > 0
 order by avg_quarterly_sales,
 	 sum_sales,
 	 i_manufact_id
-[_LIMITC];
-
+ ) subq;
+SELECT 1 [_LIMITC];

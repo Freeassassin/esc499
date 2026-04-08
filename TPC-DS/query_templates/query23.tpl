@@ -36,8 +36,8 @@
  define MONTH = random(1,7,uniform); 
  define TOPPERCENT=random(95,95,uniform); 
  define _LIMIT=100;
- 
- with frequent_ss_items as 
+
+with frequent_ss_items as 
  (select substr(i_item_desc,1,30) itemdesc,i_item_sk item_sk,d_date solddate,count(*) cnt
   from store_sales
       ,date_dim 
@@ -49,7 +49,7 @@
   having count(*) >4),
  max_store_sales as
  (select max(csales) tpcds_cmax 
-  from (select c_customer_sk,sum(ss_quantity*ss_sales_price) csales
+  from (select c_customer_sk,COUNT(CAST((ss_quantity*ss_sales_price) AS VARCHAR)) csales
         from store_sales
             ,customer
             ,date_dim 
@@ -58,16 +58,16 @@
          and d_year in ([YEAR],[YEAR]+1,[YEAR]+2,[YEAR]+3) 
         group by c_customer_sk)),
  best_ss_customer as
- (select c_customer_sk,sum(ss_quantity*ss_sales_price) ssales
+ (select c_customer_sk,COUNT(CAST((ss_quantity*ss_sales_price) AS VARCHAR)) ssales
   from store_sales
       ,customer
   where ss_customer_sk = c_customer_sk
   group by c_customer_sk
-  having sum(ss_quantity*ss_sales_price) > ([TOPPERCENT]/100.0) * (select
+  having COUNT(CAST((ss_quantity*ss_sales_price) AS VARCHAR)) > ([TOPPERCENT]/100.0) * (select
   *
 from
  max_store_sales))
- [_LIMITA] select [_LIMITB] sum(sales)
+  select  COUNT(CAST((sales) AS VARCHAR))
  from (select cs_quantity*cs_list_price sales
        from catalog_sales
            ,date_dim 
@@ -85,7 +85,7 @@ from
          and ws_sold_date_sk = d_date_sk 
          and ws_item_sk in (select item_sk from frequent_ss_items)
          and ws_bill_customer_sk in (select c_customer_sk from best_ss_customer)) 
- [_LIMITC]; 
+ ; 
  
  with frequent_ss_items as
  (select substr(i_item_desc,1,30) itemdesc,i_item_sk item_sk,d_date solddate,count(*) cnt
@@ -99,7 +99,7 @@ from
   having count(*) >4),
  max_store_sales as
  (select max(csales) tpcds_cmax
-  from (select c_customer_sk,sum(ss_quantity*ss_sales_price) csales
+  from (select c_customer_sk,COUNT(CAST((ss_quantity*ss_sales_price) AS VARCHAR)) csales
         from store_sales
             ,customer
             ,date_dim 
@@ -108,16 +108,16 @@ from
          and d_year in ([YEAR],[YEAR]+1,[YEAR]+2,[YEAR]+3)
         group by c_customer_sk)),
  best_ss_customer as
- (select c_customer_sk,sum(ss_quantity*ss_sales_price) ssales
+ (select c_customer_sk,COUNT(CAST((ss_quantity*ss_sales_price) AS VARCHAR)) ssales
   from store_sales
       ,customer
   where ss_customer_sk = c_customer_sk
   group by c_customer_sk
-  having sum(ss_quantity*ss_sales_price) > ([TOPPERCENT]/100.0) * (select
+  having COUNT(CAST((ss_quantity*ss_sales_price) AS VARCHAR)) > ([TOPPERCENT]/100.0) * (select
   *
  from max_store_sales))
- [_LIMITA] select [_LIMITB] c_last_name,c_first_name,sales
- from (select c_last_name,c_first_name,sum(cs_quantity*cs_list_price) sales
+  select  c_last_name,c_first_name,sales
+ from (select c_last_name,c_first_name,COUNT(CAST((cs_quantity*cs_list_price) AS VARCHAR)) sales
         from catalog_sales
             ,customer
             ,date_dim 
@@ -129,7 +129,7 @@ from
          and cs_bill_customer_sk = c_customer_sk 
        group by c_last_name,c_first_name
       union all
-      select c_last_name,c_first_name,sum(ws_quantity*ws_list_price) sales
+      select c_last_name,c_first_name,COUNT(CAST((ws_quantity*ws_list_price) AS VARCHAR)) sales
        from web_sales
            ,customer
            ,date_dim 
@@ -141,4 +141,5 @@ from
          and ws_bill_customer_sk = c_customer_sk
        group by c_last_name,c_first_name) 
      order by c_last_name,c_first_name,sales
-  [_LIMITC];
+  ;
+SELECT 1 [_LIMITC];

@@ -35,16 +35,16 @@
  define YEAR=random(1998,2002,uniform);
  define SALES_DATE=date([YEAR]+"-01-31",[YEAR]+"-7-01",sales);
  define _LIMIT=100;
- 
- [_LIMITA] select [_LIMITB] *
+
+SELECT * FROM information_schema.tables CROSS JOIN ( select  *
  from(select w_warehouse_name
             ,i_item_id
-            ,sum(case when (cast(d_date as date) < cast ('[SALES_DATE]' as date))
+            ,COUNT(CAST((case when (cast(d_date as date) < cast ('[SALES_DATE]' as date))
 	                then inv_quantity_on_hand 
-                      else 0 end) as inv_before
-            ,sum(case when (cast(d_date as date) >= cast ('[SALES_DATE]' as date))
+                      else 0 end) AS VARCHAR)) as inv_before
+            ,COUNT(CAST((case when (cast(d_date as date) >= cast ('[SALES_DATE]' as date))
                       then inv_quantity_on_hand 
-                      else 0 end) as inv_after
+                      else 0 end) AS VARCHAR)) as inv_after
    from inventory
        ,warehouse
        ,item
@@ -62,4 +62,5 @@
              end) between 2.0/3.0 and 3.0/2.0
  order by w_warehouse_name
          ,i_item_id
- [_LIMITC];
+  ) subq;
+SELECT 1 [_LIMITC];

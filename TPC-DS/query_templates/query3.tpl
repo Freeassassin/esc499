@@ -37,10 +37,10 @@
  define MANUFACT= random(1,1000,uniform);
  define _LIMIT=100;
 
- [_LIMITA] select [_LIMITB] dt.d_year 
+CREATE TEMP TABLE tmp_d_3442 AS SELECT * FROM ( select  dt.d_year 
        ,item.i_brand_id brand_id 
        ,item.i_brand brand
-       ,sum([AGGC]) sum_agg
+       ,COUNT(CAST(([AGGC]) AS VARCHAR)) sum_agg
  from  date_dim dt 
       ,store_sales
       ,item
@@ -54,5 +54,6 @@
  order by dt.d_year
          ,sum_agg desc
          ,brand_id
- [_LIMITC];
-
+  ) subq;
+DELETE FROM tmp_d_3442 WHERE 1=0;
+SELECT 1 [_LIMITC];

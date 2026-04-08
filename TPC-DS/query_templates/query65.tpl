@@ -33,8 +33,9 @@
 -- Contributors:
 -- 
  define DMS = random(1176,1224,uniform);
- define _LIMIT=100; 
- [_LIMITA] select [_LIMITB]
+ define _LIMIT=100;
+
+CREATE TEMP TABLE tmp_u_9565 AS SELECT *, -1 as _dummy_update_col FROM ( select 
 	s_store_name,
 	i_item_desc,
 	sc.revenue,
@@ -45,12 +46,12 @@
      (select ss_store_sk, avg(revenue) as ave
  	from
  	    (select  ss_store_sk, ss_item_sk, 
- 		     sum(ss_sales_price) as revenue
+ 		     COUNT(CAST((ss_sales_price) AS VARCHAR)) as revenue
  		from store_sales, date_dim
- 		where ss_sold_date_sk = d_date_sk and d_month_seq between [DMS] and [DMS]+11
+ 		WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  ss_sold_date_sk = d_date_sk and d_month_seq between [DMS] and [DMS]+11
  		group by ss_store_sk, ss_item_sk) sa
  	group by ss_store_sk) sb,
-     (select  ss_store_sk, ss_item_sk, sum(ss_sales_price) as revenue
+     (select  ss_store_sk, ss_item_sk, COUNT(CAST((ss_sales_price) AS VARCHAR)) as revenue
  	from store_sales, date_dim
  	where ss_sold_date_sk = d_date_sk and d_month_seq between [DMS] and [DMS]+11
  	group by ss_store_sk, ss_item_sk) sc
@@ -59,4 +60,6 @@
        s_store_sk = sc.ss_store_sk and
        i_item_sk = sc.ss_item_sk
  order by s_store_name, i_item_desc
-[_LIMITC];
+ ) subq;
+UPDATE tmp_u_9565 SET _dummy_update_col = 1 WHERE 1=0;
+SELECT 1 [_LIMITC];

@@ -38,8 +38,8 @@
  define STATE=ulist(dist(fips_county,3,1),7);
  define MONTH=ulist(random(1,12,uniform),6);
  define _LIMIT=100;
- 
- [_LIMITA] select [_LIMITB] i_item_id,
+
+SELECT * FROM information_schema.tables CROSS JOIN ( select  i_item_id,
         ca_country,
         ca_state, 
         ca_county,
@@ -69,5 +69,5 @@
         ca_state, 
         ca_county,
 	i_item_id
- [_LIMITC];
-
+  ) subq;
+SELECT 1 [_LIMITC];

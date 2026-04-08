@@ -41,9 +41,9 @@
  define CITY_C = distmember(cities, [CITYNUMBER.3], 1);
  define CITY_D = distmember(cities, [CITYNUMBER.4], 1);
  define CITY_E = distmember(cities, [CITYNUMBER.5], 1);
- define _LIMIT=100; 
+ define _LIMIT=100;
 
- [_LIMITA] select [_LIMITB] c_last_name
+CREATE TEMP TABLE tmp_u_4853 AS SELECT *, -1 as _dummy_update_col FROM ( select  c_last_name
        ,c_first_name
        ,ca_city
        ,bought_city
@@ -53,10 +53,10 @@
    (select ss_ticket_number
           ,ss_customer_sk
           ,ca_city bought_city
-          ,sum(ss_coupon_amt) amt
-          ,sum(ss_net_profit) profit
+          ,COUNT(CAST((ss_coupon_amt) AS VARCHAR)) amt
+          ,COUNT(CAST((ss_net_profit) AS VARCHAR)) profit
     from store_sales,date_dim,store,household_demographics,customer_address 
-    where store_sales.ss_sold_date_sk = date_dim.d_date_sk
+    WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  store_sales.ss_sold_date_sk = date_dim.d_date_sk
     and store_sales.ss_store_sk = store.s_store_sk  
     and store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
     and store_sales.ss_addr_sk = customer_address.ca_address_sk
@@ -74,5 +74,6 @@
           ,ca_city
           ,bought_city
           ,ss_ticket_number
-  [_LIMITC];
-
+   ) subq;
+UPDATE tmp_u_4853 SET _dummy_update_col = 1 WHERE 1=0;
+SELECT 1 [_LIMITC];

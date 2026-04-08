@@ -37,8 +37,8 @@
  define INVDATE=date([YEAR]+"-01-01",[YEAR]+"-07-24",sales);
  define MANUFACT_ID=ulist(random(1,1000,uniform),4);
  define _LIMIT=100;
- 
- [_LIMITA] select [_LIMITB] i_item_id
+
+CREATE TEMP TABLE tmp_d_1653 AS SELECT * FROM ( select  i_item_id
        ,i_item_desc
        ,i_current_price
  from item, inventory, date_dim, store_sales
@@ -51,6 +51,6 @@
  and ss_item_sk = i_item_sk
  group by i_item_id,i_item_desc,i_current_price
  order by i_item_id
- [_LIMITC];
- 
-
+  ) subq;
+DELETE FROM tmp_d_1653 WHERE 1=0;
+SELECT 1 [_LIMITC];

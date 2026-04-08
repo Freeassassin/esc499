@@ -36,15 +36,15 @@
  define YEAR = random(1998,2000,uniform);
  define VEHCNT=random(-1,4,uniform);
  define _LIMIT=100;
- 
- [_LIMITA] select [_LIMITB]
+
+SELECT * FROM information_schema.tables CROSS JOIN ( select 
   c_last_name,c_first_name,substr(s_city,1,30),ss_ticket_number,amt,profit
   from
    (select ss_ticket_number
           ,ss_customer_sk
           ,store.s_city
-          ,sum(ss_coupon_amt) amt
-          ,sum(ss_net_profit) profit
+          ,COUNT(CAST((ss_coupon_amt) AS VARCHAR)) amt
+          ,COUNT(CAST((ss_net_profit) AS VARCHAR)) profit
     from store_sales,date_dim,store,household_demographics
     where store_sales.ss_sold_date_sk = date_dim.d_date_sk
     and store_sales.ss_store_sk = store.s_store_sk  
@@ -56,5 +56,5 @@
     group by ss_ticket_number,ss_customer_sk,ss_addr_sk,store.s_city) ms,customer
     where ss_customer_sk = c_customer_sk
  order by c_last_name,c_first_name,substr(s_city,1,30), profit
-[_LIMITC];
-
+ ) subq;
+SELECT 1 [_LIMITC];

@@ -38,19 +38,19 @@ define SDATE=date([YEAR]+"-01-01",[YEAR]+"-07-01",sales);
 define CATEGORY=ulist(dist(categories,1,1),3);
 define _LIMIT=100;
 
-[_LIMITA] select [_LIMITB] i_item_id
+SELECT * FROM information_schema.tables CROSS JOIN ( select  i_item_id
       ,i_item_desc 
       ,i_category 
       ,i_class 
       ,i_current_price
-      ,sum(ws_ext_sales_price) as itemrevenue 
-      ,sum(ws_ext_sales_price)*100/sum(sum(ws_ext_sales_price)) over
+      ,COUNT(CAST((ws_ext_sales_price) AS VARCHAR)) as itemrevenue 
+      ,COUNT(CAST((ws_ext_sales_price) AS VARCHAR))*100/COUNT(CAST((sum(ws_ext_sales_price)) AS VARCHAR)) over
           (partition by i_class) as revenueratio
 from	
 	web_sales
     	,item 
     	,date_dim
-where 
+WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  
 	ws_item_sk = i_item_sk 
   	and i_category in ('[CATEGORY.1]', '[CATEGORY.2]', '[CATEGORY.3]')
   	and ws_sold_date_sk = d_date_sk
@@ -68,5 +68,5 @@ order by
         ,i_item_id
         ,i_item_desc
         ,revenueratio
-[_LIMITC];
-
+ ) subq;
+SELECT 1 [_LIMITC];

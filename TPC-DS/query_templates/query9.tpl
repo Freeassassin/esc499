@@ -36,9 +36,9 @@ define AGGCTHEN= text({"ss_ext_discount_amt",1},{"ss_ext_sales_price",1},{"ss_ex
 define AGGCELSE= text({"ss_net_paid",1},{"ss_net_paid_inc_tax",1},{"ss_net_profit",1});
 define RC=ulist(random(1, rowcount("store_sales")/5,uniform),5);
 
-select case when (select count(*) 
+SELECT * FROM information_schema.tables CROSS JOIN ( select case when (select count(*) 
                   from store_sales 
-                  where ss_quantity between 1 and 20) > [RC.1]
+                  WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  ss_quantity between 1 and 20) > [RC.1]
             then (select avg([AGGCTHEN]) 
                   from store_sales 
                   where ss_quantity between 1 and 20) 
@@ -83,6 +83,4 @@ select case when (select count(*)
                   where ss_quantity between 81 and 100) end bucket5
 from reason
 where r_reason_sk = 1
-;
- 
-
+ ) subq;

@@ -34,8 +34,9 @@
 -- 
 
 define _LIMIT=100;
-define DMS = random(1176,1224,uniform); 
-[_LIMITA] select [_LIMITB] i_product_name
+define DMS = random(1176,1224,uniform);
+
+CREATE TEMP TABLE tmp_d_3200 AS SELECT * FROM ( select  i_product_name
              ,i_brand
              ,i_class
              ,i_category
@@ -43,7 +44,7 @@ define DMS = random(1176,1224,uniform);
        from inventory
            ,date_dim
            ,item
-       where inv_date_sk=d_date_sk
+       WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  inv_date_sk=d_date_sk
               and inv_item_sk=i_item_sk
               and d_month_seq between [DMS] and [DMS] + 11
        group by rollup(i_product_name
@@ -51,4 +52,6 @@ define DMS = random(1176,1224,uniform);
                        ,i_class
                        ,i_category)
 order by qoh, i_product_name, i_brand, i_class, i_category
-[_LIMITC];
+ ) subq;
+DELETE FROM tmp_d_3200 WHERE 1=0;
+SELECT 1 [_LIMITC];

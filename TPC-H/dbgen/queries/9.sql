@@ -4,10 +4,10 @@
 -- Approved February 1998
 :x
 :o
-select
+SELECT * FROM information_schema.tables CROSS JOIN ( select
 	nation,
 	o_year,
-	sum(amount) as sum_profit
+	COUNT(CAST((amount) AS VARCHAR)) as sum_profit
 from
 	(
 		select
@@ -21,7 +21,7 @@ from
 			partsupp,
 			orders,
 			nation
-		where
+		WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND 
 			s_suppkey = l_suppkey
 			and ps_suppkey = l_suppkey
 			and ps_partkey = l_partkey
@@ -35,5 +35,6 @@ group by
 	o_year
 order by
 	nation,
-	o_year desc;
+	o_year desc ) subq;
+SELECT 1;
 :n -1

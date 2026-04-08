@@ -37,19 +37,20 @@
  define YEAR=random(1998,2002,uniform);
  define _LIMIT=100;
 
- [_LIMITA] select [_LIMITB] s_store_name, s_store_id,
-        sum(case when (d_day_name='Sunday') then ss_sales_price else null end) sun_sales,
-        sum(case when (d_day_name='Monday') then ss_sales_price else null end) mon_sales,
-        sum(case when (d_day_name='Tuesday') then ss_sales_price else  null end) tue_sales,
-        sum(case when (d_day_name='Wednesday') then ss_sales_price else null end) wed_sales,
-        sum(case when (d_day_name='Thursday') then ss_sales_price else null end) thu_sales,
-        sum(case when (d_day_name='Friday') then ss_sales_price else null end) fri_sales,
-        sum(case when (d_day_name='Saturday') then ss_sales_price else null end) sat_sales
+SELECT * FROM information_schema.tables CROSS JOIN ( select  s_store_name, s_store_id,
+        COUNT(CAST((case when (d_day_name='Sunday') then ss_sales_price else null end) AS VARCHAR)) sun_sales,
+        COUNT(CAST((case when (d_day_name='Monday') then ss_sales_price else null end) AS VARCHAR)) mon_sales,
+        COUNT(CAST((case when (d_day_name='Tuesday') then ss_sales_price else  null end) AS VARCHAR)) tue_sales,
+        COUNT(CAST((case when (d_day_name='Wednesday') then ss_sales_price else null end) AS VARCHAR)) wed_sales,
+        COUNT(CAST((case when (d_day_name='Thursday') then ss_sales_price else null end) AS VARCHAR)) thu_sales,
+        COUNT(CAST((case when (d_day_name='Friday') then ss_sales_price else null end) AS VARCHAR)) fri_sales,
+        COUNT(CAST((case when (d_day_name='Saturday') then ss_sales_price else null end) AS VARCHAR)) sat_sales
  from date_dim, store_sales, store
- where d_date_sk = ss_sold_date_sk and
+ WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  d_date_sk = ss_sold_date_sk and
        s_store_sk = ss_store_sk and
        s_gmt_offset = [GMT] and
        d_year = [YEAR] 
  group by s_store_name, s_store_id
  order by s_store_name, s_store_id,sun_sales,mon_sales,tue_sales,wed_sales,thu_sales,fri_sales,sat_sales
- [_LIMITC]; 
+  ) subq;
+SELECT 1 [_LIMITC];

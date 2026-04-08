@@ -40,8 +40,8 @@
  define COUNTY_B=distmember(fips_county, [COUNTYNUMBER.2], 2);
  define COUNTY_C=distmember(fips_county, [COUNTYNUMBER.3], 2);
  define COUNTY_D=distmember(fips_county, [COUNTYNUMBER.4], 2);
- 
- select c_last_name
+
+SELECT * FROM information_schema.tables CROSS JOIN ( select c_last_name
        ,c_first_name
        ,c_salutation
        ,c_preferred_cust_flag 
@@ -65,5 +65,4 @@
     group by ss_ticket_number,ss_customer_sk) dj,customer
     where ss_customer_sk = c_customer_sk
       and cnt between 1 and 5
-    order by cnt desc, c_last_name asc;
-
+    order by cnt desc, c_last_name asc ) subq;

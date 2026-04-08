@@ -37,9 +37,9 @@
  define STATE= ulist(dist(fips_county, 3, 1), 9);
  define YEAR= random(1998,2002, uniform);
 
- select sum (ss_quantity)
+SELECT * FROM information_schema.tables CROSS JOIN ( select COUNT(CAST((ss_quantity) AS VARCHAR))
  from store_sales, store, customer_demographics, customer_address, date_dim
- where s_store_sk = ss_store_sk
+ WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  s_store_sk = ss_store_sk
  and  ss_sold_date_sk = d_date_sk and d_year = [YEAR]
  and  
  (
@@ -100,5 +100,4 @@
   and ss_net_profit between 50 and 25000 
   )
  )
-;
-
+ ) subq;

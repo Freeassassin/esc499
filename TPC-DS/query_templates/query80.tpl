@@ -34,20 +34,20 @@
 -- 
  define YEAR = random(1998, 2002, uniform);
  define SALES_DATE=date([YEAR]+"-08-01",[YEAR]+"-08-30",sales);
- define _LIMIT=100; 
- 
- with ssr as
+ define _LIMIT=100;
+
+CREATE TEMP TABLE tmp_u_1931 AS SELECT *, -1 as _dummy_update_col FROM ( with ssr as
  (select  s_store_id as store_id,
-          sum(ss_ext_sales_price) as sales,
-          sum(coalesce(sr_return_amt, 0)) as returns,
-          sum(ss_net_profit - coalesce(sr_net_loss, 0)) as profit
+          COUNT(CAST((ss_ext_sales_price) AS VARCHAR)) as sales,
+          COUNT(CAST((coalesce(sr_return_amt, 0)) AS VARCHAR)) as returns,
+          COUNT(CAST((ss_net_profit - coalesce(sr_net_loss, 0)) AS VARCHAR)) as profit
   from store_sales left outer join store_returns on
          (ss_item_sk = sr_item_sk and ss_ticket_number = sr_ticket_number),
      date_dim,
      store,
      item,
      promotion
- where ss_sold_date_sk = d_date_sk
+ WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  ss_sold_date_sk = d_date_sk
        and d_date between cast('[SALES_DATE]' as date) 
                   and (cast('[SALES_DATE]' as date) +  30 days)
        and ss_store_sk = s_store_sk
@@ -59,9 +59,9 @@
  ,
  csr as
  (select  cp_catalog_page_id as catalog_page_id,
-          sum(cs_ext_sales_price) as sales,
-          sum(coalesce(cr_return_amount, 0)) as returns,
-          sum(cs_net_profit - coalesce(cr_net_loss, 0)) as profit
+          COUNT(CAST((cs_ext_sales_price) AS VARCHAR)) as sales,
+          COUNT(CAST((coalesce(cr_return_amount, 0)) AS VARCHAR)) as returns,
+          COUNT(CAST((cs_net_profit - coalesce(cr_net_loss, 0)) AS VARCHAR)) as profit
   from catalog_sales left outer join catalog_returns on
          (cs_item_sk = cr_item_sk and cs_order_number = cr_order_number),
      date_dim,
@@ -80,9 +80,9 @@ group by cp_catalog_page_id)
  ,
  wsr as
  (select  web_site_id,
-          sum(ws_ext_sales_price) as sales,
-          sum(coalesce(wr_return_amt, 0)) as returns,
-          sum(ws_net_profit - coalesce(wr_net_loss, 0)) as profit
+          COUNT(CAST((ws_ext_sales_price) AS VARCHAR)) as sales,
+          COUNT(CAST((coalesce(wr_return_amt, 0)) AS VARCHAR)) as returns,
+          COUNT(CAST((ws_net_profit - coalesce(wr_net_loss, 0)) AS VARCHAR)) as profit
   from web_sales left outer join web_returns on
          (ws_item_sk = wr_item_sk and ws_order_number = wr_order_number),
      date_dim,
@@ -98,11 +98,11 @@ group by cp_catalog_page_id)
        and ws_promo_sk = p_promo_sk
        and p_channel_tv = 'N'
 group by web_site_id)
- [_LIMITA] select [_LIMITB] channel
+  select  channel
         , id
-        , sum(sales) as sales
-        , sum(returns) as returns
-        , sum(profit) as profit
+        , COUNT(CAST((sales) AS VARCHAR)) as sales
+        , COUNT(CAST((returns) AS VARCHAR)) as returns
+        , COUNT(CAST((profit) AS VARCHAR)) as profit
  from 
  (select 'store channel' as channel
         , 'store' || store_id as id
@@ -128,4 +128,6 @@ group by web_site_id)
  group by rollup (channel, id)
  order by channel
          ,id
- [_LIMITC];
+  ) subq;
+UPDATE tmp_u_1931 SET _dummy_update_col = 1 WHERE 1=0;
+SELECT 1 [_LIMITC];

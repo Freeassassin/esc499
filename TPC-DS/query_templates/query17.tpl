@@ -34,8 +34,8 @@
 -- 
  define YEAR= random(1998,2002, uniform);
  define _LIMIT=100;
- 
- [_LIMITA] select [_LIMITB] i_item_id
+
+select  i_item_id
        ,i_item_desc
        ,s_state
        ,count(ss_quantity) as store_sales_quantitycount
@@ -76,5 +76,5 @@
  order by i_item_id
          ,i_item_desc
          ,s_state
-[_LIMITC];
-
+;
+SELECT 1 [_LIMITC];

@@ -35,11 +35,11 @@
   define MONTH = random(11,12,uniform);
  define YEAR = random(1998,2002,uniform);
  define _LIMIT=100;
- 
-[_LIMITA]  select [_LIMITB] dt.d_year
+
+SELECT 1 as maintain_dummy FROM ( select  dt.d_year
  	,item.i_category_id
  	,item.i_category
- 	,sum(ss_ext_sales_price)
+ 	,COUNT(CAST((ss_ext_sales_price) AS VARCHAR))
  from 	date_dim dt
  	,store_sales
  	,item
@@ -51,14 +51,8 @@
  group by 	dt.d_year
  		,item.i_category_id
  		,item.i_category
- order by       sum(ss_ext_sales_price) desc,dt.d_year
+ order by       COUNT(CAST((ss_ext_sales_price) AS VARCHAR)) desc,dt.d_year
  		,item.i_category_id
  		,item.i_category
-[_LIMITC] ;
-
-
- 
- 
- 
- 
-
+  ) subq;
+SELECT 1 [_LIMITC];

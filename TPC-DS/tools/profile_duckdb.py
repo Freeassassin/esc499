@@ -46,7 +46,7 @@ def main() -> None:
 
     errors: list[tuple[int, str]] = []
 
-    con = duckdb.connect(str(db_path), read_only=True)
+    con = duckdb.connect(str(db_path), read_only=False)
     try:
         con.execute(f"PRAGMA threads={args.threads}")
         for query_id, source_file, sql_text in statements:

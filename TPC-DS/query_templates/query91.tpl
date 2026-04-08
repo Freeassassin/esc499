@@ -42,7 +42,7 @@ select
         cc_call_center_id Call_Center,
         cc_name Call_Center_Name,
         cc_manager Manager,
-        sum(cr_net_loss) Returns_Loss
+        COUNT(CAST((cr_net_loss) AS VARCHAR)) Returns_Loss
 from
         call_center,
         catalog_returns,
@@ -51,7 +51,7 @@ from
         customer_address,
         customer_demographics,
         household_demographics
-where
+WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND 
         cr_call_center_sk       = cc_call_center_sk
 and     cr_returned_date_sk     = d_date_sk
 and     cr_returning_customer_sk= c_customer_sk
@@ -65,4 +65,4 @@ and     ( (cd_marital_status       = 'M' and cd_education_status     = 'Unknown'
 and     hd_buy_potential like '[BUY_POTENTIAL]%'
 and     ca_gmt_offset           = [GMT]
 group by cc_call_center_id,cc_name,cc_manager,cd_marital_status,cd_education_status
-order by sum(cr_net_loss) desc;
+order by COUNT(CAST((cr_net_loss) AS VARCHAR)) desc;

@@ -37,7 +37,7 @@ define YEAR = random(1998,2002,uniform);
 define MONTH = random(8,10,uniform);
 define _LIMIT=100;
 
-[_LIMITA] select [_LIMITB] 
+CREATE TEMP TABLE tmp_d_1832 AS SELECT * FROM ( select  
    s_store_name
   ,s_company_id
   ,s_street_number
@@ -48,21 +48,21 @@ define _LIMIT=100;
   ,s_county
   ,s_state
   ,s_zip
-  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk <= 30 ) then 1 else 0 end)  as "30 days" 
-  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk > 30) and 
-                 (sr_returned_date_sk - ss_sold_date_sk <= 60) then 1 else 0 end )  as "31-60 days" 
-  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk > 60) and 
-                 (sr_returned_date_sk - ss_sold_date_sk <= 90) then 1 else 0 end)  as "61-90 days" 
-  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk > 90) and
-                 (sr_returned_date_sk - ss_sold_date_sk <= 120) then 1 else 0 end)  as "91-120 days" 
-  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk  > 120) then 1 else 0 end)  as ">120 days" 
+  ,COUNT(CAST((case when (sr_returned_date_sk - ss_sold_date_sk <= 30 ) then 1 else 0 end) AS VARCHAR))  as "30 days" 
+  ,COUNT(CAST((case when (sr_returned_date_sk - ss_sold_date_sk > 30) and 
+                 (sr_returned_date_sk - ss_sold_date_sk <= 60) then 1 else 0 end ) AS VARCHAR))  as "31-60 days" 
+  ,COUNT(CAST((case when (sr_returned_date_sk - ss_sold_date_sk > 60) and 
+                 (sr_returned_date_sk - ss_sold_date_sk <= 90) then 1 else 0 end) AS VARCHAR))  as "61-90 days" 
+  ,COUNT(CAST((case when (sr_returned_date_sk - ss_sold_date_sk > 90) and
+                 (sr_returned_date_sk - ss_sold_date_sk <= 120) then 1 else 0 end) AS VARCHAR))  as "91-120 days" 
+  ,COUNT(CAST((case when (sr_returned_date_sk - ss_sold_date_sk  > 120) then 1 else 0 end) AS VARCHAR))  as ">120 days" 
 from
    store_sales
   ,store_returns
   ,store
   ,date_dim d1
   ,date_dim d2
-where
+WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND 
     d2.d_year = [YEAR]
 and d2.d_moy  = [MONTH]
 and ss_ticket_number = sr_ticket_number
@@ -92,5 +92,6 @@ order by s_store_name
         ,s_county
         ,s_state
         ,s_zip
-[_LIMITC];
-
+ ) subq;
+DELETE FROM tmp_d_1832 WHERE 1=0;
+SELECT 1 [_LIMITC];

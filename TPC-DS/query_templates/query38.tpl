@@ -35,10 +35,10 @@
 define DMS = random(1176,1224,uniform); 
 define _LIMIT=100;
 
-[_LIMITA] select [_LIMITB] count(*) from (
+select  count(*) from (
     select distinct c_last_name, c_first_name, d_date
     from store_sales, date_dim, customer
-          where store_sales.ss_sold_date_sk = date_dim.d_date_sk
+          WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  store_sales.ss_sold_date_sk = date_dim.d_date_sk
       and store_sales.ss_customer_sk = customer.c_customer_sk
       and d_month_seq between [DMS] and [DMS] + 11
   intersect
@@ -54,5 +54,5 @@ define _LIMIT=100;
       and web_sales.ws_bill_customer_sk = customer.c_customer_sk
       and d_month_seq between [DMS] and [DMS] + 11
 ) hot_cust
-[_LIMITC];
-
+;
+SELECT 1 [_LIMITC];

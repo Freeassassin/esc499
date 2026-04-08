@@ -35,8 +35,8 @@
  define CITY = dist(cities, 1, large);
  define INCOME = random(0, 70000, uniform);
  define _LIMIT=100;
- 
- [_LIMITA] select [_LIMITB] c_customer_id as customer_id
+
+CREATE TEMP TABLE tmp_u_3584 AS SELECT *, -1 as _dummy_update_col FROM ( select  c_customer_id as customer_id
        , coalesce(c_last_name,'') || ', ' || coalesce(c_first_name,'') as customername
  from customer
      ,customer_address
@@ -44,7 +44,7 @@
      ,household_demographics
      ,income_band
      ,store_returns
- where ca_city	        =  '[CITY]'
+ WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  ca_city	        =  '[CITY]'
    and c_current_addr_sk = ca_address_sk
    and ib_lower_bound   >=  [INCOME]
    and ib_upper_bound   <=  [INCOME] + 50000
@@ -53,6 +53,6 @@
    and hd_demo_sk = c_current_hdemo_sk
    and sr_cdemo_sk = cd_demo_sk
  order by c_customer_id
- [_LIMITC];
- 
-
+  ) subq;
+UPDATE tmp_u_3584 SET _dummy_update_col = 1 WHERE 1=0;
+SELECT 1 [_LIMITC];

@@ -37,19 +37,19 @@ define YEAR=random(1998,2002,uniform);
 define SDATE=date([YEAR]+"-01-01",[YEAR]+"-07-01",sales);
 define CATEGORY=ulist(dist(categories,1,1),3);
 
-select i_item_id
+CREATE TEMP TABLE tmp_u_2638 AS SELECT *, -1 as _dummy_update_col FROM ( select i_item_id
       ,i_item_desc 
       ,i_category 
       ,i_class 
       ,i_current_price
-      ,sum(ss_ext_sales_price) as itemrevenue 
-      ,sum(ss_ext_sales_price)*100/sum(sum(ss_ext_sales_price)) over
+      ,COUNT(CAST((ss_ext_sales_price) AS VARCHAR)) as itemrevenue 
+      ,COUNT(CAST((ss_ext_sales_price) AS VARCHAR))*100/COUNT(CAST((sum(ss_ext_sales_price)) AS VARCHAR)) over
           (partition by i_class) as revenueratio
 from	
 	store_sales
     	,item 
     	,date_dim
-where 
+WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  
 	ss_item_sk = i_item_sk 
   	and i_category in ('[CATEGORY.1]', '[CATEGORY.2]', '[CATEGORY.3]')
   	and ss_sold_date_sk = d_date_sk
@@ -66,5 +66,5 @@ order by
         ,i_class
         ,i_item_id
         ,i_item_desc
-        ,revenueratio;
-
+        ,revenueratio ) subq;
+UPDATE tmp_u_2638 SET _dummy_update_col = 1 WHERE 1=0;

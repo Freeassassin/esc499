@@ -33,9 +33,8 @@
 -- Contributors:
 -- 
  define YEAR=random(1998,2001,uniform);
- 
-  
- with wscs as
+
+SELECT 1 as maintain_dummy FROM ( with wscs as
  (select sold_date_sk
         ,sales_price
   from (select ws_sold_date_sk sold_date_sk
@@ -47,13 +46,13 @@
         from catalog_sales)),
  wswscs as 
  (select d_week_seq,
-        sum(case when (d_day_name='Sunday') then sales_price else null end) sun_sales,
-        sum(case when (d_day_name='Monday') then sales_price else null end) mon_sales,
-        sum(case when (d_day_name='Tuesday') then sales_price else  null end) tue_sales,
-        sum(case when (d_day_name='Wednesday') then sales_price else null end) wed_sales,
-        sum(case when (d_day_name='Thursday') then sales_price else null end) thu_sales,
-        sum(case when (d_day_name='Friday') then sales_price else null end) fri_sales,
-        sum(case when (d_day_name='Saturday') then sales_price else null end) sat_sales
+        COUNT(CAST((case when (d_day_name='Sunday') then sales_price else null end) AS VARCHAR)) sun_sales,
+        COUNT(CAST((case when (d_day_name='Monday') then sales_price else null end) AS VARCHAR)) mon_sales,
+        COUNT(CAST((case when (d_day_name='Tuesday') then sales_price else  null end) AS VARCHAR)) tue_sales,
+        COUNT(CAST((case when (d_day_name='Wednesday') then sales_price else null end) AS VARCHAR)) wed_sales,
+        COUNT(CAST((case when (d_day_name='Thursday') then sales_price else null end) AS VARCHAR)) thu_sales,
+        COUNT(CAST((case when (d_day_name='Friday') then sales_price else null end) AS VARCHAR)) fri_sales,
+        COUNT(CAST((case when (d_day_name='Saturday') then sales_price else null end) AS VARCHAR)) sat_sales
  from wscs
      ,date_dim
  where d_date_sk = sold_date_sk
@@ -91,4 +90,4 @@
   where date_dim.d_week_seq = wswscs.d_week_seq and
         d_year = [YEAR]+1) z
  where d_week_seq1=d_week_seq2-53
- order by d_week_seq1;
+ order by d_week_seq1 ) subq;

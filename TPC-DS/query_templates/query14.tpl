@@ -34,7 +34,7 @@
 -- 
  define YEAR= random(1998, 2000, uniform);
  define DAY = random(1,28,uniform);
- define _LIMIT=100; 
+ define _LIMIT=100;
 
 with  cross_items as
  (select i_item_sk ss_item_sk
@@ -45,7 +45,7 @@ with  cross_items as
  from store_sales
      ,item iss
      ,date_dim d1
- where ss_item_sk = iss.i_item_sk
+ WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  ss_item_sk = iss.i_item_sk
    and ss_sold_date_sk = d1.d_date_sk
    and d1.d_year between [YEAR] AND [YEAR] + 2
  intersect 
@@ -94,10 +94,10 @@ with  cross_items as
            ,date_dim
        where ws_sold_date_sk = d_date_sk
          and d_year between [YEAR] and [YEAR] + 2) x)
- [_LIMITA] select [_LIMITB] channel, i_brand_id,i_class_id,i_category_id,sum(sales), sum(number_sales)
+  select  channel, i_brand_id,i_class_id,i_category_id,COUNT(CAST((sales) AS VARCHAR)), COUNT(CAST((number_sales) AS VARCHAR))
  from(
        select 'store' channel, i_brand_id,i_class_id
-             ,i_category_id,sum(ss_quantity*ss_list_price) sales
+             ,i_category_id,COUNT(CAST((ss_quantity*ss_list_price) AS VARCHAR)) sales
              , count(*) number_sales
        from store_sales
            ,item
@@ -108,9 +108,9 @@ with  cross_items as
          and d_year = [YEAR]+2 
          and d_moy = 11
        group by i_brand_id,i_class_id,i_category_id
-       having sum(ss_quantity*ss_list_price) > (select average_sales from avg_sales)
+       having COUNT(CAST((ss_quantity*ss_list_price) AS VARCHAR)) > (select average_sales from avg_sales)
        union all
-       select 'catalog' channel, i_brand_id,i_class_id,i_category_id, sum(cs_quantity*cs_list_price) sales, count(*) number_sales
+       select 'catalog' channel, i_brand_id,i_class_id,i_category_id, COUNT(CAST((cs_quantity*cs_list_price) AS VARCHAR)) sales, count(*) number_sales
        from catalog_sales
            ,item
            ,date_dim
@@ -120,9 +120,9 @@ with  cross_items as
          and d_year = [YEAR]+2 
          and d_moy = 11
        group by i_brand_id,i_class_id,i_category_id
-       having sum(cs_quantity*cs_list_price) > (select average_sales from avg_sales)
+       having COUNT(CAST((cs_quantity*cs_list_price) AS VARCHAR)) > (select average_sales from avg_sales)
        union all
-       select 'web' channel, i_brand_id,i_class_id,i_category_id, sum(ws_quantity*ws_list_price) sales , count(*) number_sales
+       select 'web' channel, i_brand_id,i_class_id,i_category_id, COUNT(CAST((ws_quantity*ws_list_price) AS VARCHAR)) sales , count(*) number_sales
        from web_sales
            ,item
            ,date_dim
@@ -132,11 +132,11 @@ with  cross_items as
          and d_year = [YEAR]+2
          and d_moy = 11
        group by i_brand_id,i_class_id,i_category_id
-       having sum(ws_quantity*ws_list_price) > (select average_sales from avg_sales)
+       having COUNT(CAST((ws_quantity*ws_list_price) AS VARCHAR)) > (select average_sales from avg_sales)
  ) y
  group by rollup (channel, i_brand_id,i_class_id,i_category_id)
  order by channel,i_brand_id,i_class_id,i_category_id
- [_LIMITC];
+ ;
  
  with  cross_items as
  (select i_item_sk ss_item_sk
@@ -196,7 +196,7 @@ with  cross_items as
            ,date_dim
        where ws_sold_date_sk = d_date_sk
          and d_year between [YEAR] and [YEAR] + 2) x)
- [_LIMITA] select [_LIMITB] this_year.channel ty_channel
+  select  this_year.channel ty_channel
                            ,this_year.i_brand_id ty_brand
                            ,this_year.i_class_id ty_class
                            ,this_year.i_category_id ty_category
@@ -210,7 +210,7 @@ with  cross_items as
                            ,last_year.number_sales ly_number_sales 
  from
  (select 'store' channel, i_brand_id,i_class_id,i_category_id
-        ,sum(ss_quantity*ss_list_price) sales, count(*) number_sales
+        ,COUNT(CAST((ss_quantity*ss_list_price) AS VARCHAR)) sales, count(*) number_sales
  from store_sales 
      ,item
      ,date_dim
@@ -223,9 +223,9 @@ with  cross_items as
                        and d_moy = 12
                        and d_dom = [DAY])
  group by i_brand_id,i_class_id,i_category_id
- having sum(ss_quantity*ss_list_price) > (select average_sales from avg_sales)) this_year,
+ having COUNT(CAST((ss_quantity*ss_list_price) AS VARCHAR)) > (select average_sales from avg_sales)) this_year,
  (select 'store' channel, i_brand_id,i_class_id
-        ,i_category_id, sum(ss_quantity*ss_list_price) sales, count(*) number_sales
+        ,i_category_id, COUNT(CAST((ss_quantity*ss_list_price) AS VARCHAR)) sales, count(*) number_sales
  from store_sales
      ,item
      ,date_dim
@@ -238,10 +238,10 @@ with  cross_items as
                        and d_moy = 12
                        and d_dom = [DAY])
  group by i_brand_id,i_class_id,i_category_id
- having sum(ss_quantity*ss_list_price) > (select average_sales from avg_sales)) last_year
+ having COUNT(CAST((ss_quantity*ss_list_price) AS VARCHAR)) > (select average_sales from avg_sales)) last_year
  where this_year.i_brand_id= last_year.i_brand_id
    and this_year.i_class_id = last_year.i_class_id
    and this_year.i_category_id = last_year.i_category_id
  order by this_year.channel, this_year.i_brand_id, this_year.i_class_id, this_year.i_category_id
- [_LIMITC];
-
+ ;
+SELECT 1 [_LIMITC];

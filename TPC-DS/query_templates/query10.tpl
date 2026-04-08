@@ -35,9 +35,9 @@
  define COUNTY = ulist(dist(fips_county,2,1),10);
  define MONTH = random(1,4,uniform);
  define YEAR = random(1999,2002,uniform);
- define _LIMIT=100; 
+ define _LIMIT=100;
 
- [_LIMITA] select [_LIMITB] 
+CREATE TEMP TABLE tmp_u_9666 AS SELECT *, -1 as _dummy_update_col FROM ( select  
   cd_gender,
   cd_marital_status,
   cd_education_status,
@@ -92,7 +92,6 @@
           cd_dep_count,
           cd_dep_employed_count,
           cd_dep_college_count
-[_LIMITC];
- 
- 
-
+ ) subq;
+UPDATE tmp_u_9666 SET _dummy_update_col = 1 WHERE 1=0;
+SELECT 1 [_LIMITC];

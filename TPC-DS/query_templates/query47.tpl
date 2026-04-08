@@ -38,12 +38,12 @@
  define SELECTTWO= text({",v1.d_year",1},{",v1.d_year, v1.d_moy",1}); 
  define ORDERBY= text({"avg_monthly_sales",1},{"sum_sales",1},{"psum",1},{"nsum",1});
 
- with v1 as(
+CREATE TEMP TABLE t_temp_6067 AS SELECT * FROM ( with v1 as(
  select i_category, i_brand,
         s_store_name, s_company_name,
         d_year, d_moy,
-        sum(ss_sales_price) sum_sales,
-        avg(sum(ss_sales_price)) over
+        COUNT(CAST((ss_sales_price) AS VARCHAR)) sum_sales,
+        avg(COUNT(CAST((ss_sales_price) AS VARCHAR))) over
           (partition by i_category, i_brand,
                      s_store_name, s_company_name, d_year)
           avg_monthly_sales,
@@ -52,7 +52,7 @@
                      s_store_name, s_company_name
            order by d_year, d_moy) rn
  from item, store_sales, date_dim, store
- where ss_item_sk = i_item_sk and
+ WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  ss_item_sk = i_item_sk and
        ss_sold_date_sk = d_date_sk and
        ss_store_sk = s_store_sk and
        (
@@ -79,11 +79,11 @@
        v1.s_company_name = v1_lead.s_company_name and
        v1.rn = v1_lag.rn + 1 and
        v1.rn = v1_lead.rn - 1)
- [_LIMITA] select [_LIMITB] *
+  select  *
  from v2
  where  d_year = [YEAR] and    
         avg_monthly_sales > 0 and
         case when avg_monthly_sales > 0 then abs(sum_sales - avg_monthly_sales) / avg_monthly_sales else null end > 0.1
  order by sum_sales - avg_monthly_sales, [ORDERBY]
- [_LIMITC];
-
+  ) subq;
+SELECT 1 [_LIMITC];

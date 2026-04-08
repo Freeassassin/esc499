@@ -36,11 +36,11 @@
  define HOUR_AM = random(6,12,uniform);
  define HOUR_PM = random(13,21,uniform);
  define _LIMIT=100;
- 
- [_LIMITA] select [_LIMITB] cast(amc as decimal(15,4))/cast(pmc as decimal(15,4)) am_pm_ratio
+
+CREATE TEMP TABLE tmp_d_5088 AS SELECT * FROM ( select  cast(amc as decimal(15,4))/cast(pmc as decimal(15,4)) am_pm_ratio
  from ( select count(*) amc
        from web_sales, household_demographics , time_dim, web_page
-       where ws_sold_time_sk = time_dim.t_time_sk
+       WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  ws_sold_time_sk = time_dim.t_time_sk
          and ws_ship_hdemo_sk = household_demographics.hd_demo_sk
          and ws_web_page_sk = web_page.wp_web_page_sk
          and time_dim.t_hour between [HOUR_AM] and [HOUR_AM]+1
@@ -55,4 +55,6 @@
          and household_demographics.hd_dep_count = [DEPCNT]
          and web_page.wp_char_count between 5000 and 5200) pt
  order by am_pm_ratio
- [_LIMITC];
+  ) subq;
+DELETE FROM tmp_d_5088 WHERE 1=0;
+SELECT 1 [_LIMITC];

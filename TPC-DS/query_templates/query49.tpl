@@ -35,8 +35,8 @@
  define YEAR=random(1998,2002,uniform);
  define MONTH=random(11,12,uniform);
  define _LIMIT=100;
- 
- [_LIMITA] select [_LIMITB] channel, item, return_ratio, return_rank, currency_rank from
+
+CREATE TEMP TABLE tmp_u_1958 AS SELECT *, -1 as _dummy_update_col FROM ( select  channel, item, return_ratio, return_rank, currency_rank from
  (select
  'web' as channel
  ,web.item
@@ -52,16 +52,16 @@
  	,rank() over (order by currency_ratio) as currency_rank
  	from
  	(	select ws.ws_item_sk as item
- 		,(cast(sum(coalesce(wr.wr_return_quantity,0)) as decimal(15,4))/
- 		cast(sum(coalesce(ws.ws_quantity,0)) as decimal(15,4) )) as return_ratio
- 		,(cast(sum(coalesce(wr.wr_return_amt,0)) as decimal(15,4))/
- 		cast(sum(coalesce(ws.ws_net_paid,0)) as decimal(15,4) )) as currency_ratio
+ 		,(cast(COUNT(CAST((coalesce(wr.wr_return_quantity,0)) AS VARCHAR)) as decimal(15,4))/
+ 		cast(COUNT(CAST((coalesce(ws.ws_quantity,0)) AS VARCHAR)) as decimal(15,4) )) as return_ratio
+ 		,(cast(COUNT(CAST((coalesce(wr.wr_return_amt,0)) AS VARCHAR)) as decimal(15,4))/
+ 		cast(COUNT(CAST((coalesce(ws.ws_net_paid,0)) AS VARCHAR)) as decimal(15,4) )) as currency_ratio
  		from 
- 		 web_sales ws left outer join web_returns wr 
+ 		 web_sales ws LEFT OUTER JOIN web_returns wr 
  			on (ws.ws_order_number = wr.wr_order_number and 
  			ws.ws_item_sk = wr.wr_item_sk)
                  ,date_dim
- 		where 
+ 		WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  
  			wr.wr_return_amt > 10000 
  			and ws.ws_net_profit > 1
                          and ws.ws_net_paid > 0
@@ -95,12 +95,12 @@
  	from
  	(	select 
  		cs.cs_item_sk as item
- 		,(cast(sum(coalesce(cr.cr_return_quantity,0)) as decimal(15,4))/
- 		cast(sum(coalesce(cs.cs_quantity,0)) as decimal(15,4) )) as return_ratio
- 		,(cast(sum(coalesce(cr.cr_return_amount,0)) as decimal(15,4))/
- 		cast(sum(coalesce(cs.cs_net_paid,0)) as decimal(15,4) )) as currency_ratio
+ 		,(cast(COUNT(CAST((coalesce(cr.cr_return_quantity,0)) AS VARCHAR)) as decimal(15,4))/
+ 		cast(COUNT(CAST((coalesce(cs.cs_quantity,0)) AS VARCHAR)) as decimal(15,4) )) as return_ratio
+ 		,(cast(COUNT(CAST((coalesce(cr.cr_return_amount,0)) AS VARCHAR)) as decimal(15,4))/
+ 		cast(COUNT(CAST((coalesce(cs.cs_net_paid,0)) AS VARCHAR)) as decimal(15,4) )) as currency_ratio
  		from 
- 		catalog_sales cs left outer join catalog_returns cr
+ 		catalog_sales cs LEFT OUTER JOIN catalog_returns cr
  			on (cs.cs_order_number = cr.cr_order_number and 
  			cs.cs_item_sk = cr.cr_item_sk)
                 ,date_dim
@@ -137,10 +137,10 @@
  	,rank() over (order by currency_ratio) as currency_rank
  	from
  	(	select sts.ss_item_sk as item
- 		,(cast(sum(coalesce(sr.sr_return_quantity,0)) as decimal(15,4))/cast(sum(coalesce(sts.ss_quantity,0)) as decimal(15,4) )) as return_ratio
- 		,(cast(sum(coalesce(sr.sr_return_amt,0)) as decimal(15,4))/cast(sum(coalesce(sts.ss_net_paid,0)) as decimal(15,4) )) as currency_ratio
+ 		,(cast(COUNT(CAST((coalesce(sr.sr_return_quantity,0)) AS VARCHAR)) as decimal(15,4))/cast(COUNT(CAST((coalesce(sts.ss_quantity,0)) AS VARCHAR)) as decimal(15,4) )) as return_ratio
+ 		,(cast(COUNT(CAST((coalesce(sr.sr_return_amt,0)) AS VARCHAR)) as decimal(15,4))/cast(COUNT(CAST((coalesce(sts.ss_net_paid,0)) AS VARCHAR)) as decimal(15,4) )) as currency_ratio
  		from 
- 		store_sales sts left outer join store_returns sr
+ 		store_sales sts LEFT OUTER JOIN store_returns sr
  			on (sts.ss_ticket_number = sr.sr_ticket_number and sts.ss_item_sk = sr.sr_item_sk)
                 ,date_dim
  		where 
@@ -161,4 +161,6 @@
  )
  )
  order by 1,4,5,2
- [_LIMITC];
+  ) subq;
+UPDATE tmp_u_1958 SET _dummy_update_col = 1 WHERE 1=0;
+SELECT 1 [_LIMITC];

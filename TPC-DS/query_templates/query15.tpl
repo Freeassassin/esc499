@@ -35,14 +35,14 @@
  define YEAR=random(1998,2002,uniform);
  define QOY=random(1,2,uniform);
  define _LIMIT=100;
- 
- [_LIMITA] select [_LIMITB] ca_zip
-       ,sum(cs_sales_price)
+
+CREATE TEMP TABLE t_temp_5844 AS SELECT * FROM ( select  ca_zip
+       ,COUNT(CAST((cs_sales_price) AS VARCHAR))
  from catalog_sales
      ,customer
      ,customer_address
      ,date_dim
- where cs_bill_customer_sk = c_customer_sk
+ WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  cs_bill_customer_sk = c_customer_sk
  	and c_current_addr_sk = ca_address_sk 
  	and ( substr(ca_zip,1,5) in ('85669', '86197','88274','83405','86475',
                                    '85392', '85460', '80348', '81792')
@@ -52,5 +52,5 @@
  	and d_qoy = [QOY] and d_year = [YEAR]
  group by ca_zip
  order by ca_zip
- [_LIMITC];
-
+  ) subq;
+SELECT 1 [_LIMITC];

@@ -35,7 +35,7 @@
  define DMS = random(1176,1224,uniform);
  define _LIMIT=100;
 
-[_LIMITA] select [_LIMITB] *
+select  *
 from (select i_category
             ,i_class
             ,i_brand
@@ -54,12 +54,12 @@ from (select i_category
                   ,d_qoy
                   ,d_moy
                   ,s_store_id
-                  ,sum(coalesce(ss_sales_price*ss_quantity,0)) sumsales
+                  ,COUNT(CAST((coalesce(ss_sales_price*ss_quantity,0)) AS VARCHAR)) sumsales
             from store_sales
                 ,date_dim
                 ,store
                 ,item
-       where  ss_sold_date_sk=d_date_sk
+       WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND   ss_sold_date_sk=d_date_sk
           and ss_item_sk=i_item_sk
           and ss_store_sk = s_store_sk
           and d_month_seq between [DMS] and [DMS]+11
@@ -75,7 +75,5 @@ order by i_category
         ,s_store_id
         ,sumsales
         ,rk
-[_LIMITC];
- 
- 
-
+;
+SELECT 1 [_LIMITC];

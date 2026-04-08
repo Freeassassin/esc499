@@ -4,8 +4,8 @@
 -- Approved February 1998
 :x
 :o
-select
-	sum(l_extendedprice) / 7.0 as avg_yearly
+SELECT * FROM information_schema.tables CROSS JOIN ( select
+	COUNT(CAST((l_extendedprice) AS VARCHAR)) / 7.0 as avg_yearly
 from
 	lineitem,
 	part
@@ -20,5 +20,6 @@ where
 			lineitem
 		where
 			l_partkey = p_partkey
-	);
+	) ) subq;
+SELECT 1;
 :n -1

@@ -38,14 +38,14 @@
  define COLOR=ulist(dist(colors,1,1),3);
  define _LIMIT=100;
 
- with ss as (
- select i_item_id,sum(ss_ext_sales_price) total_sales
+CREATE TEMP TABLE tmp_u_5956 AS SELECT *, -1 as _dummy_update_col FROM ( with ss as (
+ select i_item_id,COUNT(CAST((ss_ext_sales_price) AS VARCHAR)) total_sales
  from
  	store_sales,
  	date_dim,
          customer_address,
          item
- where i_item_id in (select
+ WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  i_item_id in (select
      i_item_id
 from item
 where i_color in ('[COLOR.1]','[COLOR.2]','[COLOR.3]'))
@@ -57,7 +57,7 @@ where i_color in ('[COLOR.1]','[COLOR.2]','[COLOR.3]'))
  and     ca_gmt_offset           = [GMT] 
  group by i_item_id),
  cs as (
- select i_item_id,sum(cs_ext_sales_price) total_sales
+ select i_item_id,COUNT(CAST((cs_ext_sales_price) AS VARCHAR)) total_sales
  from
  	catalog_sales,
  	date_dim,
@@ -76,7 +76,7 @@ where i_color in ('[COLOR.1]','[COLOR.2]','[COLOR.3]'))
  and     ca_gmt_offset           = [GMT] 
  group by i_item_id),
  ws as (
- select i_item_id,sum(ws_ext_sales_price) total_sales
+ select i_item_id,COUNT(CAST((ws_ext_sales_price) AS VARCHAR)) total_sales
  from
  	web_sales,
  	date_dim,
@@ -94,7 +94,7 @@ where i_color in ('[COLOR.1]','[COLOR.2]','[COLOR.3]'))
  and     ws_bill_addr_sk         = ca_address_sk
  and     ca_gmt_offset           = [GMT]
  group by i_item_id)
- [_LIMITA] select [_LIMITB] i_item_id ,sum(total_sales) total_sales
+  select  i_item_id ,COUNT(CAST((total_sales) AS VARCHAR)) total_sales
  from  (select * from ss 
         union all
         select * from cs 
@@ -103,6 +103,6 @@ where i_color in ('[COLOR.1]','[COLOR.2]','[COLOR.3]'))
  group by i_item_id
  order by total_sales,
           i_item_id
- [_LIMITC];
- 
-
+  ) subq;
+UPDATE tmp_u_5956 SET _dummy_update_col = 1 WHERE 1=0;
+SELECT 1 [_LIMITC];

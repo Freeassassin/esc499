@@ -37,11 +37,11 @@ define HOUR= text({"20",1},{"15",1},{"16",1},{"8",1});
 define DEPCNT=random(0,9,uniform);
 define _LIMIT=100;
 
-[_LIMITA] select [_LIMITB] count(*) 
+select  count(*) 
 from store_sales
     ,household_demographics 
     ,time_dim, store
-where ss_sold_time_sk = time_dim.t_time_sk   
+WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  ss_sold_time_sk = time_dim.t_time_sk   
     and ss_hdemo_sk = household_demographics.hd_demo_sk 
     and ss_store_sk = s_store_sk
     and time_dim.t_hour = [HOUR]
@@ -49,4 +49,5 @@ where ss_sold_time_sk = time_dim.t_time_sk
     and household_demographics.hd_dep_count = [DEPCNT]
     and store.s_store_name = 'ese'
 order by count(*)
-[_LIMITC];
+;
+SELECT 1 [_LIMITC];

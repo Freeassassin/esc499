@@ -43,4 +43,5 @@ group by
 order by
 	numwait desc,
 	s_name;
+SELECT 1;
 :n 100

@@ -33,17 +33,16 @@
 -- Contributors:
 -- 
  define YEAR=random(1998,2002,uniform);
- define AGG= text({"ss1.ca_county",1},{"ss1.d_year",1},{"web_q1_q2_increase",1},{"store_q1_q2_increase",1},{"web_q2_q3_increase",1},{"store_q2_q3_increase",1}); 
+ define AGG= text({"ss1.ca_county",1},{"ss1.d_year",1},{"web_q1_q2_increase",1},{"store_q1_q2_increase",1},{"web_q2_q3_increase",1},{"store_q2_q3_increase",1});
 
-
- with ss as
- (select ca_county,d_qoy, d_year,sum(ss_ext_sales_price) as store_sales
+CREATE TEMP TABLE tmp_u_8973 AS SELECT *, -1 as _dummy_update_col FROM ( with ss as
+ (select ca_county,d_qoy, d_year,COUNT(CAST((ss_ext_sales_price) AS VARCHAR)) as store_sales
  from store_sales,date_dim,customer_address
  where ss_sold_date_sk = d_date_sk
   and ss_addr_sk=ca_address_sk
  group by ca_county,d_qoy, d_year),
  ws as
- (select ca_county,d_qoy, d_year,sum(ws_ext_sales_price) as web_sales
+ (select ca_county,d_qoy, d_year,COUNT(CAST((ws_ext_sales_price) AS VARCHAR)) as web_sales
  from web_sales,date_dim,customer_address
  where ws_sold_date_sk = d_date_sk
   and ws_bill_addr_sk=ca_address_sk
@@ -84,5 +83,5 @@
        > case when ss1.store_sales > 0 then ss2.store_sales/ss1.store_sales else null end
     and case when ws2.web_sales > 0 then ws3.web_sales/ws2.web_sales else null end
        > case when ss2.store_sales > 0 then ss3.store_sales/ss2.store_sales else null end
- order by [AGG];
-
+ order by [AGG] ) subq;
+UPDATE tmp_u_8973 SET _dummy_update_col = 1 WHERE 1=0;

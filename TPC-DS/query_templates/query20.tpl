@@ -35,20 +35,20 @@
  define YEAR=random(1998,2002,uniform);
  define SDATE=date([YEAR]+"-01-01",[YEAR]+"-07-01",sales);
  define CATEGORY=ulist(dist(categories,1,1),3);
- define _LIMIT=100; 
+ define _LIMIT=100;
 
- [_LIMITA] select [_LIMITB] i_item_id
+select  i_item_id
        ,i_item_desc 
        ,i_category 
        ,i_class 
        ,i_current_price
-       ,sum(cs_ext_sales_price) as itemrevenue 
-       ,sum(cs_ext_sales_price)*100/sum(sum(cs_ext_sales_price)) over
+       ,COUNT(CAST((cs_ext_sales_price) AS VARCHAR)) as itemrevenue 
+       ,COUNT(CAST((cs_ext_sales_price) AS VARCHAR))*100/COUNT(CAST((sum(cs_ext_sales_price)) AS VARCHAR)) over
            (partition by i_class) as revenueratio
  from	catalog_sales
      ,item 
      ,date_dim
- where cs_item_sk = i_item_sk 
+ WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  cs_item_sk = i_item_sk 
    and i_category in ('[CATEGORY.1]', '[CATEGORY.2]', '[CATEGORY.3]')
    and cs_sold_date_sk = d_date_sk
  and d_date between cast('[SDATE]' as date) 
@@ -63,5 +63,5 @@
          ,i_item_id
          ,i_item_desc
          ,revenueratio
-[_LIMITC];
-
+;
+SELECT 1 [_LIMITC];

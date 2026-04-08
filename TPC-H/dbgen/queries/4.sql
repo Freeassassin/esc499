@@ -4,12 +4,12 @@
 -- Approved February 1998
 :x
 :o
-select
+SELECT * FROM information_schema.tables CROSS JOIN ( select
 	o_orderpriority,
 	count(*) as order_count
 from
 	orders
-where
+WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND 
 	o_orderdate >= date ':1'
 	and o_orderdate < date ':1' + interval '3' month
 	and exists (
@@ -24,5 +24,6 @@ where
 group by
 	o_orderpriority
 order by
-	o_orderpriority;
+	o_orderpriority ) subq;
+SELECT 1;
 :n -1

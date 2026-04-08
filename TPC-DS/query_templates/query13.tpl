@@ -35,19 +35,18 @@
  define MS= ulist(dist(marital_status, 1, 1), 3);
  define ES= ulist(dist(education, 1, 1), 3);
  define STATE= ulist(dist(fips_county, 3, 1), 9);
- 
 
- select avg(ss_quantity)
+select avg(ss_quantity)
        ,avg(ss_ext_sales_price)
        ,avg(ss_ext_wholesale_cost)
-       ,sum(ss_ext_wholesale_cost)
+       ,COUNT(CAST((ss_ext_wholesale_cost) AS VARCHAR))
  from store_sales
      ,store
      ,customer_demographics
      ,household_demographics
      ,customer_address
      ,date_dim
- where s_store_sk = ss_store_sk
+ WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  s_store_sk = ss_store_sk
  and  ss_sold_date_sk = d_date_sk and d_year = 2001
  and((ss_hdemo_sk=hd_demo_sk
   and cd_demo_sk = ss_cdemo_sk
@@ -86,4 +85,3 @@
   and ss_net_profit between 50 and 250  
      ))
 ;
-

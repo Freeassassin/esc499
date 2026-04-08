@@ -37,10 +37,10 @@
  define SIZE=ulist(dist(sizes,1,1),6);
  define MANUFACT= random(667,1000,uniform); 
  define _LIMIT=100;
- 
- [_LIMITA] select [_LIMITB] distinct(i_product_name)
+
+CREATE TEMP TABLE tmp_d_5533 AS SELECT * FROM ( select  distinct(i_product_name)
  from item i1
- where i_manufact_id between [MANUFACT] and [MANUFACT]+40 
+ WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  i_manufact_id between [MANUFACT] and [MANUFACT]+40 
    and (select count(*) as item_cnt
         from item
         where (i_manufact = i1.i_manufact and
@@ -86,5 +86,6 @@
         (i_size = '[SIZE.1]' or i_size = '[SIZE.2]')
         )))) > 0
  order by i_product_name
- [_LIMITC];
-
+  ) subq;
+DELETE FROM tmp_d_5533 WHERE 1=0;
+SELECT 1 [_LIMITC];

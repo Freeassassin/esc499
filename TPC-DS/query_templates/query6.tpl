@@ -35,8 +35,8 @@
  define YEAR = random(1998, 2002, uniform);
  define MONTH= random(1,7,uniform);
  define _LIMIT=100;
- 
- [_LIMITA] select [_LIMITB] a.ca_state state, count(*) cnt
+
+SELECT 1 as maintain_dummy FROM ( select  a.ca_state state, count(*) cnt
  from customer_address a
      ,customer c
      ,store_sales s
@@ -58,5 +58,5 @@
  group by a.ca_state
  having count(*) >= 10
  order by cnt, a.ca_state 
- [_LIMITC];
-
+  ) subq;
+SELECT 1 [_LIMITC];

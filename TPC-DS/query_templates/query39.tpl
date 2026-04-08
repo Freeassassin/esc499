@@ -36,8 +36,6 @@
 define MONTH = random(1,4,uniform);
 define YEAR = random(1998,2002, uniform);
 
-
-
 with inv as
 (select w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy
        ,stdev,mean, case mean when 0 then null else stdev/mean end cov

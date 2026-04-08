@@ -35,15 +35,15 @@
 define DMS = random(1176,1224,uniform);
 define _LIMIT=100;
 
-[_LIMITA] select [_LIMITB] * 
+SELECT * FROM information_schema.tables CROSS JOIN ( select  * 
 from (select i_manager_id
-             ,sum(ss_sales_price) sum_sales
-             ,avg(sum(ss_sales_price)) over (partition by i_manager_id) avg_monthly_sales
+             ,COUNT(CAST((ss_sales_price) AS VARCHAR)) sum_sales
+             ,avg(COUNT(CAST((ss_sales_price) AS VARCHAR))) over (partition by i_manager_id) avg_monthly_sales
       from item
           ,store_sales
           ,date_dim
           ,store
-      where ss_item_sk = i_item_sk
+      WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  ss_item_sk = i_item_sk
         and ss_sold_date_sk = d_date_sk
         and ss_store_sk = s_store_sk
         and d_month_seq in ([DMS],[DMS]+1,[DMS]+2,[DMS]+3,[DMS]+4,[DMS]+5,[DMS]+6,[DMS]+7,[DMS]+8,[DMS]+9,[DMS]+10,[DMS]+11)
@@ -60,5 +60,5 @@ where case when avg_monthly_sales > 0 then abs (sum_sales - avg_monthly_sales) /
 order by i_manager_id
         ,avg_monthly_sales
         ,sum_sales
-[_LIMITC];
-
+ ) subq;
+SELECT 1 [_LIMITC];

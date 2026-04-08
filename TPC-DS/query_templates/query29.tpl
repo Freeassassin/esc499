@@ -36,8 +36,8 @@
  define MONTH = random(4,4,uniform); 
  define AGG= text({"sum",1},{"min",1},{"max",1},{"avg",1},{"stddev_samp",1}); 
  define _LIMIT=100;
- 
- [_LIMITA] select [_LIMITB]  
+
+CREATE TEMP TABLE tmp_d_1158 AS SELECT * FROM ( select   
      i_item_id
     ,i_item_desc
     ,s_store_id
@@ -54,7 +54,7 @@
    ,date_dim             d3
    ,store
    ,item
- where
+ WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND 
      d1.d_moy               = [MONTH] 
  and d1.d_year              = [YEAR]
  and d1.d_date_sk           = ss_sold_date_sk
@@ -80,6 +80,6 @@
    ,i_item_desc
    ,s_store_id
    ,s_store_name
- [_LIMITC];
- 
-
+  ) subq;
+DELETE FROM tmp_d_1158 WHERE 1=0;
+SELECT 1 [_LIMITC];

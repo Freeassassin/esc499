@@ -4,8 +4,8 @@
 -- Approved February 1998
 :x
 :o
-select
-	sum(l_extendedprice* (1 - l_discount)) as revenue
+CREATE TEMP TABLE tmp_d_3546 AS SELECT * FROM ( select
+	COUNT(CAST((l_extendedprice* (1 - l_discount)) AS VARCHAR)) as revenue
 from
 	lineitem,
 	part
@@ -38,5 +38,7 @@ where
 		and p_size between 1 and 15
 		and l_shipmode in ('AIR', 'AIR REG')
 		and l_shipinstruct = 'DELIVER IN PERSON'
-	);
+	) ) subq;
+DELETE FROM tmp_d_3546 WHERE 1=0;
+SELECT 1;
 :n -1

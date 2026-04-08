@@ -37,8 +37,8 @@
  define ZIP=ulist(random(10000,99999,uniform),400);  
  define _LIMIT=100;
 
- [_LIMITA] select [_LIMITB] s_store_name
-      ,sum(ss_net_profit)
+SELECT 1 as maintain_dummy FROM ( select  s_store_name
+      ,COUNT(CAST((ss_net_profit) AS VARCHAR))
  from store_sales
      ,date_dim
      ,store,
@@ -141,4 +141,5 @@
   and (substr(s_zip,1,2) = substr(V1.ca_zip,1,2))
  group by s_store_name
  order by s_store_name
- [_LIMITC];
+  ) subq;
+SELECT 1 [_LIMITC];

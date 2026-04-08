@@ -38,14 +38,14 @@ define CATEGORY = distmember(categories,[CINDX],1);
 define YEAR = random(1999,2002,uniform);
 define _LIMIT=100;
 
-WITH all_sales AS (
+SELECT * FROM information_schema.tables CROSS JOIN ( WITH all_sales AS (
  SELECT d_year
        ,i_brand_id
        ,i_class_id
        ,i_category_id
        ,i_manufact_id
-       ,SUM(sales_cnt) AS sales_cnt
-       ,SUM(sales_amt) AS sales_amt
+       ,COUNT(CAST((sales_cnt) AS VARCHAR)) AS sales_cnt
+       ,COUNT(CAST((sales_amt) AS VARCHAR)) AS sales_amt
  FROM (SELECT d_year
              ,i_brand_id
              ,i_class_id
@@ -53,11 +53,11 @@ WITH all_sales AS (
              ,i_manufact_id
              ,cs_quantity - COALESCE(cr_return_quantity,0) AS sales_cnt
              ,cs_ext_sales_price - COALESCE(cr_return_amount,0.0) AS sales_amt
-       FROM catalog_sales JOIN item ON i_item_sk=cs_item_sk
-                          JOIN date_dim ON d_date_sk=cs_sold_date_sk
-                          LEFT JOIN catalog_returns ON (cs_order_number=cr_order_number 
+       FROM catalog_sales LEFT OUTER JOIN item ON i_item_sk=cs_item_sk
+                          LEFT OUTER JOIN date_dim ON d_date_sk=cs_sold_date_sk
+                          LEFT OUTER JOIN catalog_returns ON (cs_order_number=cr_order_number 
                                                     AND cs_item_sk=cr_item_sk)
-       WHERE i_category='[CATEGORY]'
+       WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  i_category='[CATEGORY]'
        UNION
        SELECT d_year
              ,i_brand_id
@@ -66,9 +66,9 @@ WITH all_sales AS (
              ,i_manufact_id
              ,ss_quantity - COALESCE(sr_return_quantity,0) AS sales_cnt
              ,ss_ext_sales_price - COALESCE(sr_return_amt,0.0) AS sales_amt
-       FROM store_sales JOIN item ON i_item_sk=ss_item_sk
-                        JOIN date_dim ON d_date_sk=ss_sold_date_sk
-                        LEFT JOIN store_returns ON (ss_ticket_number=sr_ticket_number 
+       FROM store_sales LEFT OUTER JOIN item ON i_item_sk=ss_item_sk
+                        LEFT OUTER JOIN date_dim ON d_date_sk=ss_sold_date_sk
+                        LEFT OUTER JOIN store_returns ON (ss_ticket_number=sr_ticket_number 
                                                 AND ss_item_sk=sr_item_sk)
        WHERE i_category='[CATEGORY]'
        UNION
@@ -79,13 +79,13 @@ WITH all_sales AS (
              ,i_manufact_id
              ,ws_quantity - COALESCE(wr_return_quantity,0) AS sales_cnt
              ,ws_ext_sales_price - COALESCE(wr_return_amt,0.0) AS sales_amt
-       FROM web_sales JOIN item ON i_item_sk=ws_item_sk
-                      JOIN date_dim ON d_date_sk=ws_sold_date_sk
-                      LEFT JOIN web_returns ON (ws_order_number=wr_order_number 
+       FROM web_sales LEFT OUTER JOIN item ON i_item_sk=ws_item_sk
+                      LEFT OUTER JOIN date_dim ON d_date_sk=ws_sold_date_sk
+                      LEFT OUTER JOIN web_returns ON (ws_order_number=wr_order_number 
                                             AND ws_item_sk=wr_item_sk)
        WHERE i_category='[CATEGORY]') sales_detail
  GROUP BY d_year, i_brand_id, i_class_id, i_category_id, i_manufact_id)
-[_LIMITA] SELECT [_LIMITB] prev_yr.d_year AS prev_year
+ SELECT  prev_yr.d_year AS prev_year
                           ,curr_yr.d_year AS year
                           ,curr_yr.i_brand_id
                           ,curr_yr.i_class_id
@@ -104,4 +104,5 @@ WITH all_sales AS (
    AND prev_yr.d_year=[YEAR]-1
    AND CAST(curr_yr.sales_cnt AS DECIMAL(17,2))/CAST(prev_yr.sales_cnt AS DECIMAL(17,2))<0.9
  ORDER BY sales_cnt_diff,sales_amt_diff
- [_LIMITC];
+  ) subq;
+SELECT 1 [_LIMITC];

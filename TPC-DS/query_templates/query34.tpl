@@ -44,9 +44,8 @@
  define COUNTY_F=distmember(fips_county, [COUNTYNUMBER.6], 2);
  define COUNTY_G=distmember(fips_county, [COUNTYNUMBER.7], 2);
  define COUNTY_H=distmember(fips_county, [COUNTYNUMBER.8], 2);
- 
- 
- select c_last_name
+
+SELECT 1 as maintain_dummy FROM ( select c_last_name
        ,c_first_name
        ,c_salutation
        ,c_preferred_cust_flag
@@ -56,7 +55,7 @@
           ,ss_customer_sk
           ,count(*) cnt
     from store_sales,date_dim,store,household_demographics
-    where store_sales.ss_sold_date_sk = date_dim.d_date_sk
+    WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  store_sales.ss_sold_date_sk = date_dim.d_date_sk
     and store_sales.ss_store_sk = store.s_store_sk  
     and store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
     and (date_dim.d_dom between 1 and 3 or date_dim.d_dom between 25 and 28)
@@ -73,5 +72,4 @@
     group by ss_ticket_number,ss_customer_sk) dn,customer
     where ss_customer_sk = c_customer_sk
       and cnt between 15 and 20
-    order by c_last_name,c_first_name,c_salutation,c_preferred_cust_flag desc, ss_ticket_number;
-
+    order by c_last_name,c_first_name,c_salutation,c_preferred_cust_flag desc, ss_ticket_number ) subq;

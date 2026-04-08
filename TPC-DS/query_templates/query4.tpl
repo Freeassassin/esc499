@@ -39,7 +39,7 @@ define SELECTONE= text({"t_s_secyear.customer_preferred_cust_flag",1}
                        ,{"t_s_secyear.customer_email_address",1});
 define _LIMIT=100;
 
-with year_total as (
+SELECT * FROM information_schema.tables CROSS JOIN ( with year_total as (
  select c_customer_id customer_id
        ,c_first_name customer_first_name
        ,c_last_name customer_last_name
@@ -48,12 +48,12 @@ with year_total as (
        ,c_login customer_login
        ,c_email_address customer_email_address
        ,d_year dyear
-       ,sum(((ss_ext_list_price-ss_ext_wholesale_cost-ss_ext_discount_amt)+ss_ext_sales_price)/2) year_total
+       ,COUNT(CAST((((ss_ext_list_price-ss_ext_wholesale_cost-ss_ext_discount_amt)+ss_ext_sales_price)/2) AS VARCHAR)) year_total
        ,'s' sale_type
  from customer
      ,store_sales
      ,date_dim
- where c_customer_sk = ss_customer_sk
+ WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  c_customer_sk = ss_customer_sk
    and ss_sold_date_sk = d_date_sk
  group by c_customer_id
          ,c_first_name
@@ -72,7 +72,7 @@ with year_total as (
        ,c_login customer_login
        ,c_email_address customer_email_address
        ,d_year dyear
-       ,sum((((cs_ext_list_price-cs_ext_wholesale_cost-cs_ext_discount_amt)+cs_ext_sales_price)/2) ) year_total
+       ,COUNT(CAST(((((cs_ext_list_price-cs_ext_wholesale_cost-cs_ext_discount_amt)+cs_ext_sales_price)/2) ) AS VARCHAR)) year_total
        ,'c' sale_type
  from customer
      ,catalog_sales
@@ -96,7 +96,7 @@ union all
        ,c_login customer_login
        ,c_email_address customer_email_address
        ,d_year dyear
-       ,sum((((ws_ext_list_price-ws_ext_wholesale_cost-ws_ext_discount_amt)+ws_ext_sales_price)/2) ) year_total
+       ,COUNT(CAST(((((ws_ext_list_price-ws_ext_wholesale_cost-ws_ext_discount_amt)+ws_ext_sales_price)/2) ) AS VARCHAR)) year_total
        ,'w' sale_type
  from customer
      ,web_sales
@@ -112,7 +112,7 @@ union all
          ,c_email_address
          ,d_year
          )
-[_LIMITA]  select [_LIMITB] 
+  select  
                   t_s_secyear.customer_id
                  ,t_s_secyear.customer_first_name
                  ,t_s_secyear.customer_last_name
@@ -151,4 +151,5 @@ union all
          ,t_s_secyear.customer_first_name
          ,t_s_secyear.customer_last_name
          ,[SELECTONE]
-[_LIMITC];
+ ) subq;
+SELECT 1 [_LIMITC];

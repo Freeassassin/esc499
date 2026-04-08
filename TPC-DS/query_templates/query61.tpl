@@ -39,9 +39,9 @@ define GMT = text({"-6",1},{"-7",1});
 define CATEGORY = text({"Books",1},{"Home",1},{"Electronics",1},{"Jewelry",1},{"Sports",1});
 define _LIMIT=100;
 
-[_LIMITA] select [_LIMITB] promotions,total,cast(promotions as decimal(15,4))/cast(total as decimal(15,4))*100
+SELECT * FROM information_schema.tables CROSS JOIN ( select  promotions,total,cast(promotions as decimal(15,4))/cast(total as decimal(15,4))*100
 from
-  (select sum(ss_ext_sales_price) promotions
+  (select COUNT(CAST((ss_ext_sales_price) AS VARCHAR)) promotions
    from  store_sales
         ,store
         ,promotion
@@ -61,7 +61,7 @@ from
    and   s_gmt_offset = [GMT]
    and   d_year = [YEAR]
    and   d_moy  = [MONTH]) promotional_sales,
-  (select sum(ss_ext_sales_price) total
+  (select COUNT(CAST((ss_ext_sales_price) AS VARCHAR)) total
    from  store_sales
         ,store
         ,date_dim
@@ -79,5 +79,5 @@ from
    and   d_year = [YEAR]
    and   d_moy  = [MONTH]) all_sales
 order by promotions, total
-[_LIMITC];
-
+ ) subq;
+SELECT 1 [_LIMITC];

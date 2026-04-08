@@ -35,8 +35,8 @@
  define YEAR= random(1998,2002, uniform); 
  define AGG= text({"sum",1},{"min",1},{"max",1},{"avg",1},{"stddev_samp",1});
  define _LIMIT=100;
- 
- [_LIMITA] select [_LIMITB] 
+
+CREATE TEMP TABLE tmp_u_9238 AS SELECT *, -1 as _dummy_update_col FROM ( select  
  i_item_id
  ,i_item_desc
  ,s_store_id
@@ -53,7 +53,7 @@
  ,date_dim d3
  ,store
  ,item
- where
+ WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND 
  d1.d_moy = 4
  and d1.d_year = [YEAR]
  and d1.d_date_sk = ss_sold_date_sk
@@ -80,5 +80,6 @@
  ,i_item_desc
  ,s_store_id
  ,s_store_name
- [_LIMITC];
-
+  ) subq;
+UPDATE tmp_u_9238 SET _dummy_update_col = 1 WHERE 1=0;
+SELECT 1 [_LIMITC];

@@ -4,22 +4,22 @@
 -- Approved February 1998
 :x
 :o
-select
+CREATE TEMP TABLE tmp_u_2127 AS SELECT *, -1 as _dummy_update_col FROM ( select
 	ps_partkey,
-	sum(ps_supplycost * ps_availqty) as value
+	COUNT(CAST((ps_supplycost * ps_availqty) AS VARCHAR)) as value
 from
 	partsupp,
 	supplier,
 	nation
-where
+WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND 
 	ps_suppkey = s_suppkey
 	and s_nationkey = n_nationkey
 	and n_name = ':1'
 group by
 	ps_partkey having
-		sum(ps_supplycost * ps_availqty) > (
+		COUNT(CAST((ps_supplycost * ps_availqty) AS VARCHAR)) > (
 			select
-				sum(ps_supplycost * ps_availqty) * :2
+				COUNT(CAST((ps_supplycost * ps_availqty) AS VARCHAR)) * :2
 			from
 				partsupp,
 				supplier,
@@ -30,5 +30,7 @@ group by
 				and n_name = ':1'
 		)
 order by
-	value desc;
+	value desc ) subq;
+UPDATE tmp_u_2127 SET _dummy_update_col = 1 WHERE 1=0;
+SELECT 1;
 :n -1

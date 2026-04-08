@@ -19,7 +19,7 @@ from
 	partsupp,
 	nation,
 	region
-where
+WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND 
 	p_partkey = ps_partkey
 	and s_suppkey = ps_suppkey
 	and p_size = :1
@@ -47,4 +47,5 @@ order by
 	n_name,
 	s_name,
 	p_partkey;
+SELECT 1;
 :n 100

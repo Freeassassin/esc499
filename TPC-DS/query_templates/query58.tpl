@@ -35,14 +35,14 @@
  define YEAR = random(1998, 2002, uniform); 
  define SALES_DATE=date([YEAR]+"-01-01",[YEAR]+"-07-24",sales); 
  define _LIMIT=100;
- 
- with ss_items as
+
+CREATE TEMP TABLE tmp_d_6617 AS SELECT * FROM ( with ss_items as
  (select i_item_id item_id
-        ,sum(ss_ext_sales_price) ss_item_rev 
+        ,COUNT(CAST((ss_ext_sales_price) AS VARCHAR)) ss_item_rev 
  from store_sales
      ,item
      ,date_dim
- where ss_item_sk = i_item_sk
+ WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  ss_item_sk = i_item_sk
    and d_date in (select d_date
                   from date_dim
                   where d_week_seq = (select d_week_seq 
@@ -52,7 +52,7 @@
  group by i_item_id),
  cs_items as
  (select i_item_id item_id
-        ,sum(cs_ext_sales_price) cs_item_rev
+        ,COUNT(CAST((cs_ext_sales_price) AS VARCHAR)) cs_item_rev
   from catalog_sales
       ,item
       ,date_dim
@@ -66,7 +66,7 @@
  group by i_item_id),
  ws_items as
  (select i_item_id item_id
-        ,sum(ws_ext_sales_price) ws_item_rev
+        ,COUNT(CAST((ws_ext_sales_price) AS VARCHAR)) ws_item_rev
   from web_sales
       ,item
       ,date_dim
@@ -78,7 +78,7 @@
                                      where d_date = '[SALES_DATE]'))
   and ws_sold_date_sk   = d_date_sk
  group by i_item_id)
- [_LIMITA] select [_LIMITB] ss_items.item_id
+  select  ss_items.item_id
        ,ss_item_rev
        ,ss_item_rev/((ss_item_rev+cs_item_rev+ws_item_rev)/3) * 100 ss_dev
        ,cs_item_rev
@@ -97,5 +97,6 @@
    and ws_item_rev between 0.9 * cs_item_rev and 1.1 * cs_item_rev
  order by item_id
          ,ss_item_rev
- [_LIMITC];
-
+  ) subq;
+DELETE FROM tmp_d_6617 WHERE 1=0;
+SELECT 1 [_LIMITC];

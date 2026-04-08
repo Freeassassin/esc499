@@ -4,10 +4,10 @@
 -- Approved February 1998
 :x
 :o
-select
+SELECT * FROM information_schema.tables CROSS JOIN ( select
 	c_custkey,
 	c_name,
-	sum(l_extendedprice * (1 - l_discount)) as revenue,
+	COUNT(CAST((l_extendedprice * (1 - l_discount)) AS VARCHAR)) as revenue,
 	c_acctbal,
 	n_name,
 	c_address,
@@ -18,7 +18,7 @@ from
 	orders,
 	lineitem,
 	nation
-where
+WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND 
 	c_custkey = o_custkey
 	and l_orderkey = o_orderkey
 	and o_orderdate >= date ':1'
@@ -34,5 +34,6 @@ group by
 	c_address,
 	c_comment
 order by
-	revenue desc;
+	revenue desc ) subq;
+SELECT 1;
 :n 20

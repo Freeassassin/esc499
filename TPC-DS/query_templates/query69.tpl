@@ -36,8 +36,8 @@
  define YEAR=random(1999,2004,uniform);
  define STATE= ulist(dist(fips_county, 3, 1), 3);
  define _LIMIT=100;
- 
- [_LIMITA] select [_LIMITB] 
+
+SELECT * FROM information_schema.tables CROSS JOIN ( select  
   cd_gender,
   cd_marital_status,
   cd_education_status,
@@ -80,6 +80,5 @@
           cd_education_status,
           cd_purchase_estimate,
           cd_credit_rating
- [_LIMITC];
- 
-
+  ) subq;
+SELECT 1 [_LIMITC];

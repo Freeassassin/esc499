@@ -37,12 +37,12 @@ define YEAR  = random(1998,2002,uniform);
 define CSDATE = date([YEAR]+"-01-01",[YEAR]+"-04-01",sales);
 define _LIMIT=100;
 
-[_LIMITA] select [_LIMITB] sum(cs_ext_discount_amt)  as "excess discount amount" 
+CREATE TEMP TABLE tmp_d_6974 AS SELECT * FROM ( select  COUNT(CAST((cs_ext_discount_amt) AS VARCHAR))  as "excess discount amount" 
 from 
    catalog_sales 
    ,item 
    ,date_dim
-where
+WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND 
 i_manufact_id = [IMID]
 and i_item_sk = cs_item_sk 
 and d_date between '[CSDATE]' and 
@@ -61,5 +61,6 @@ and cs_ext_discount_amt
                              (cast('[CSDATE]' as date) + 90 days)
           and d_date_sk = cs_sold_date_sk 
       ) 
-[_LIMITC]; 
-
+ ) subq;
+DELETE FROM tmp_d_6974 WHERE 1=0;
+SELECT 1 [_LIMITC];

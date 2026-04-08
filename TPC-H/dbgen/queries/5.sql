@@ -6,7 +6,7 @@
 :o
 select
 	n_name,
-	sum(l_extendedprice * (1 - l_discount)) as revenue
+	COUNT(CAST((l_extendedprice * (1 - l_discount)) AS VARCHAR)) as revenue
 from
 	customer,
 	orders,
@@ -14,7 +14,7 @@ from
 	supplier,
 	nation,
 	region
-where
+WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND 
 	c_custkey = o_custkey
 	and l_orderkey = o_orderkey
 	and l_suppkey = s_suppkey
@@ -28,4 +28,5 @@ group by
 	n_name
 order by
 	revenue desc;
+SELECT 1;
 :n -1

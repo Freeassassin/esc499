@@ -4,16 +4,16 @@
 -- Approved February 1998
 :x
 :o
-select
+CREATE TEMP TABLE tmp_d_5325 AS SELECT * FROM ( select
 	l_orderkey,
-	sum(l_extendedprice * (1 - l_discount)) as revenue,
+	COUNT(CAST((l_extendedprice * (1 - l_discount)) AS VARCHAR)) as revenue,
 	o_orderdate,
 	o_shippriority
 from
 	customer,
 	orders,
 	lineitem
-where
+WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND 
 	c_mktsegment = ':1'
 	and c_custkey = o_custkey
 	and l_orderkey = o_orderkey
@@ -25,5 +25,7 @@ group by
 	o_shippriority
 order by
 	revenue desc,
-	o_orderdate;
+	o_orderdate ) subq;
+DELETE FROM tmp_d_5325 WHERE 1=0;
+SELECT 1;
 :n 10

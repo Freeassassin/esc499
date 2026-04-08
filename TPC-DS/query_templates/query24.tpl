@@ -49,14 +49,14 @@ with ssales as
       ,i_manager_id
       ,i_units
       ,i_size
-      ,sum([AMOUNTONE]) netpaid
+      ,COUNT(CAST(([AMOUNTONE]) AS VARCHAR)) netpaid
 from store_sales
     ,store_returns
     ,store
     ,item
     ,customer
     ,customer_address
-where ss_ticket_number = sr_ticket_number
+WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  ss_ticket_number = sr_ticket_number
   and ss_item_sk = sr_item_sk
   and ss_customer_sk = c_customer_sk
   and ss_item_sk = i_item_sk
@@ -78,13 +78,13 @@ group by c_last_name
 select c_last_name
       ,c_first_name
       ,s_store_name
-      ,sum(netpaid) paid
+      ,COUNT(CAST((netpaid) AS VARCHAR)) paid
 from ssales
 where i_color = '[COLOR.1]'
 group by c_last_name
         ,c_first_name
         ,s_store_name
-having sum(netpaid) > (select 0.05*avg(netpaid)
+having COUNT(CAST((netpaid) AS VARCHAR)) > (select 0.05*avg(netpaid)
                                  from ssales)
 order by c_last_name
         ,c_first_name
@@ -102,7 +102,7 @@ with ssales as
       ,i_manager_id
       ,i_units
       ,i_size
-      ,sum([AMOUNTONE]) netpaid
+      ,COUNT(CAST(([AMOUNTONE]) AS VARCHAR)) netpaid
 from store_sales
     ,store_returns
     ,store
@@ -131,17 +131,15 @@ group by c_last_name
 select c_last_name
       ,c_first_name
       ,s_store_name
-      ,sum(netpaid) paid
+      ,COUNT(CAST((netpaid) AS VARCHAR)) paid
 from ssales
 where i_color = '[COLOR.2]'
 group by c_last_name
         ,c_first_name
         ,s_store_name
-having sum(netpaid) > (select 0.05*avg(netpaid)
+having COUNT(CAST((netpaid) AS VARCHAR)) > (select 0.05*avg(netpaid)
                            from ssales)
 order by c_last_name
         ,c_first_name
         ,s_store_name
 ;
-
- 

@@ -37,12 +37,12 @@
  define MANUFACT_ID=ulist(random(667,1000,uniform),4);
  define PRICE=random(10,70,uniform);
  define _LIMIT=100;
-  
- [_LIMITA] select [_LIMITB] i_item_id
+
+CREATE TEMP TABLE tmp_i_5279 AS SELECT * FROM ( select  i_item_id
        ,i_item_desc
        ,i_current_price
  from item, inventory, date_dim, catalog_sales
- where i_current_price between [PRICE] and [PRICE] + 30
+ WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  i_current_price between [PRICE] and [PRICE] + 30
  and inv_item_sk = i_item_sk
  and d_date_sk=inv_date_sk
  and d_date between cast('[INVDATE]' as date) and (cast('[INVDATE]' as date) +  60 days)
@@ -51,7 +51,19 @@
  and cs_item_sk = i_item_sk
  group by i_item_id,i_item_desc,i_current_price
  order by i_item_id
- [_LIMITC];
- 
- 
-
+  ) subq LIMIT 0;
+INSERT INTO tmp_i_5279 SELECT * FROM ( select  i_item_id
+       ,i_item_desc
+       ,i_current_price
+ from item, inventory, date_dim, catalog_sales
+ WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  i_current_price between [PRICE] and [PRICE] + 30
+ and inv_item_sk = i_item_sk
+ and d_date_sk=inv_date_sk
+ and d_date between cast('[INVDATE]' as date) and (cast('[INVDATE]' as date) +  60 days)
+ and i_manufact_id in ([MANUFACT_ID.1],[MANUFACT_ID.2],[MANUFACT_ID.3],[MANUFACT_ID.4])
+ and inv_quantity_on_hand between 100 and 500
+ and cs_item_sk = i_item_sk
+ group by i_item_id,i_item_desc,i_current_price
+ order by i_item_id
+  ) subq;
+SELECT 1 [_LIMITC];

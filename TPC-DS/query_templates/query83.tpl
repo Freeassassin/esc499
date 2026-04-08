@@ -37,14 +37,14 @@
  define RETURNED_DATE_TWO=date([YEAR]+"-08-01",[YEAR]+"-10-24",sales);
  define RETURNED_DATE_THREE=date([YEAR]+"-11-01",[YEAR]+"-11-24",sales);
  define _LIMIT=100;
- 
- with sr_items as
+
+CREATE TEMP TABLE t_temp_6409 AS SELECT * FROM ( with sr_items as
  (select i_item_id item_id,
-        sum(sr_return_quantity) sr_item_qty
+        COUNT(CAST((sr_return_quantity) AS VARCHAR)) sr_item_qty
  from store_returns,
       item,
       date_dim
- where sr_item_sk = i_item_sk
+ WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  sr_item_sk = i_item_sk
  and   d_date    in 
 	(select d_date
 	from date_dim
@@ -56,7 +56,7 @@
  group by i_item_id),
  cr_items as
  (select i_item_id item_id,
-        sum(cr_return_quantity) cr_item_qty
+        COUNT(CAST((cr_return_quantity) AS VARCHAR)) cr_item_qty
  from catalog_returns,
       item,
       date_dim
@@ -72,7 +72,7 @@
  group by i_item_id),
  wr_items as
  (select i_item_id item_id,
-        sum(wr_return_quantity) wr_item_qty
+        COUNT(CAST((wr_return_quantity) AS VARCHAR)) wr_item_qty
  from web_returns,
       item,
       date_dim
@@ -86,7 +86,7 @@
 		where d_date in ('[RETURNED_DATE_ONE]','[RETURNED_DATE_TWO]','[RETURNED_DATE_THREE]')))
  and   wr_returned_date_sk   = d_date_sk
  group by i_item_id)
- [_LIMITA] select [_LIMITB] sr_items.item_id
+  select  sr_items.item_id
        ,sr_item_qty
        ,sr_item_qty/(sr_item_qty+cr_item_qty+wr_item_qty)/3.0 * 100 sr_dev
        ,cr_item_qty
@@ -101,4 +101,5 @@
    and sr_items.item_id=wr_items.item_id 
  order by sr_items.item_id
          ,sr_item_qty
- [_LIMITC];
+  ) subq;
+SELECT 1 [_LIMITC];

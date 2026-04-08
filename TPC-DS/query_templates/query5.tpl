@@ -35,13 +35,13 @@
  define YEAR = random(1998, 2002, uniform);
  define SALES_DATE=date([YEAR]+"-08-01",[YEAR]+"-08-30",sales);
  define _LIMIT=100;
- 
- with ssr as
+
+SELECT * FROM information_schema.tables CROSS JOIN ( with ssr as
  (select s_store_id,
-        sum(sales_price) as sales,
-        sum(profit) as profit,
-        sum(return_amt) as returns,
-        sum(net_loss) as profit_loss
+        COUNT(CAST((sales_price) AS VARCHAR)) as sales,
+        COUNT(CAST((profit) AS VARCHAR)) as profit,
+        COUNT(CAST((return_amt) AS VARCHAR)) as returns,
+        COUNT(CAST((net_loss) AS VARCHAR)) as profit_loss
  from
   ( select  ss_store_sk as store_sk,
             ss_sold_date_sk  as date_sk,
@@ -69,10 +69,10 @@
  ,
  csr as
  (select cp_catalog_page_id,
-        sum(sales_price) as sales,
-        sum(profit) as profit,
-        sum(return_amt) as returns,
-        sum(net_loss) as profit_loss
+        COUNT(CAST((sales_price) AS VARCHAR)) as sales,
+        COUNT(CAST((profit) AS VARCHAR)) as profit,
+        COUNT(CAST((return_amt) AS VARCHAR)) as returns,
+        COUNT(CAST((net_loss) AS VARCHAR)) as profit_loss
  from
   ( select  cs_catalog_page_sk as page_sk,
             cs_sold_date_sk  as date_sk,
@@ -100,10 +100,10 @@
  ,
  wsr as
  (select web_site_id,
-        sum(sales_price) as sales,
-        sum(profit) as profit,
-        sum(return_amt) as returns,
-        sum(net_loss) as profit_loss
+        COUNT(CAST((sales_price) AS VARCHAR)) as sales,
+        COUNT(CAST((profit) AS VARCHAR)) as profit,
+        COUNT(CAST((return_amt) AS VARCHAR)) as returns,
+        COUNT(CAST((net_loss) AS VARCHAR)) as profit_loss
  from
   ( select  ws_web_site_sk as wsr_web_site_sk,
             ws_sold_date_sk  as date_sk,
@@ -130,11 +130,11 @@
                   and (cast('[SALES_DATE]' as date) +  14 days)
        and wsr_web_site_sk = web_site_sk
  group by web_site_id)
- [_LIMITA] select [_LIMITB] channel
+  select  channel
         , id
-        , sum(sales) as sales
-        , sum(returns) as returns
-        , sum(profit) as profit
+        , COUNT(CAST((sales) AS VARCHAR)) as sales
+        , COUNT(CAST((returns) AS VARCHAR)) as returns
+        , COUNT(CAST((profit) AS VARCHAR)) as profit
  from 
  (select 'store channel' as channel
         , 'store' || s_store_id as id
@@ -160,6 +160,5 @@
  group by rollup (channel, id)
  order by channel
          ,id
- [_LIMITC];
- 
-
+  ) subq;
+SELECT 1 [_LIMITC];

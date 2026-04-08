@@ -38,8 +38,8 @@
  define CATEGORY = distmember(categories,[CINDX],1);
  define CLASS = dist(distmember(categories,[CINDX],2),1,1); 
  define _LIMIT=100;
- 
- with my_customers as (
+
+SELECT * FROM information_schema.tables CROSS JOIN ( with my_customers as (
  select distinct c_customer_sk
         , c_current_addr_sk
  from   
@@ -66,7 +66,7 @@
  )
  , my_revenue as (
  select c_customer_sk,
-        sum(ss_ext_sales_price) as revenue
+        COUNT(CAST((ss_ext_sales_price) AS VARCHAR)) as revenue
  from   my_customers,
         store_sales,
         customer_address,
@@ -87,9 +87,9 @@
  (select cast((revenue/50) as int) as segment
   from   my_revenue
  )
- [_LIMITA] select [_LIMITB] segment, count(*) as num_customers, segment*50 as segment_base
+  select  segment, count(*) as num_customers, segment*50 as segment_base
  from segments
  group by segment
  order by segment, num_customers
- [_LIMITC];
- 
+  ) subq;
+SELECT 1 [_LIMITC];

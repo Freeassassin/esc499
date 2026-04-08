@@ -38,17 +38,17 @@ define YEAR = random(1998, 2002, uniform);
 define AGG_FIELD = text({"SR_RETURN_AMT",1},{"SR_FEE",1},{"SR_REFUNDED_CASH",1},{"SR_RETURN_AMT_INC_TAX",1},{"SR_REVERSED_CHARGE",1},{"SR_STORE_CREDIT",1},{"SR_RETURN_TAX",1});
 define _LIMIT=100;
 
-with customer_total_return as
+CREATE TEMP TABLE tmp_u_6138 AS SELECT *, -1 as _dummy_update_col FROM ( with customer_total_return as
 (select sr_customer_sk as ctr_customer_sk
 ,sr_store_sk as ctr_store_sk
-,sum([AGG_FIELD]) as ctr_total_return
+,COUNT(CAST(([AGG_FIELD]) AS VARCHAR)) as ctr_total_return
 from store_returns
 ,date_dim
-where sr_returned_date_sk = d_date_sk
+WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  sr_returned_date_sk = d_date_sk
 and d_year =[YEAR]
 group by sr_customer_sk
 ,sr_store_sk)
-[_LIMITA] select [_LIMITB] c_customer_id
+ select  c_customer_id
 from customer_total_return ctr1
 ,store
 ,customer
@@ -59,4 +59,6 @@ and s_store_sk = ctr1.ctr_store_sk
 and s_state = '[STATE]'
 and ctr1.ctr_customer_sk = c_customer_sk
 order by c_customer_id
-[_LIMITC];
+ ) subq;
+UPDATE tmp_u_6138 SET _dummy_update_col = 1 WHERE 1=0;
+SELECT 1 [_LIMITC];

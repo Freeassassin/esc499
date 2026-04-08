@@ -44,16 +44,16 @@ define COUNTY_D = distmember(fips_county, [COUNTYNUMBER.4], 2);
 define COUNTY_E = distmember(fips_county, [COUNTYNUMBER.5], 2);
 define _LIMIT=100;
 
-[_LIMITA] select [_LIMITB] 
+SELECT * FROM information_schema.tables CROSS JOIN ( select  
    count(distinct cs_order_number) as "order count"
-  ,sum(cs_ext_ship_cost) as "total shipping cost"
-  ,sum(cs_net_profit) as "total net profit"
+  ,COUNT(CAST((cs_ext_ship_cost) AS VARCHAR)) as "total shipping cost"
+  ,COUNT(CAST((cs_net_profit) AS VARCHAR)) as "total net profit"
 from
    catalog_sales cs1
   ,date_dim
   ,customer_address
   ,call_center
-where
+WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND 
     d_date between '[YEAR]-[MONTH]-01' and 
            (cast('[YEAR]-[MONTH]-01' as date) + 60 days)
 and cs1.cs_ship_date_sk = d_date_sk
@@ -71,6 +71,5 @@ and not exists(select *
                from catalog_returns cr1
                where cs1.cs_order_number = cr1.cr_order_number)
 order by count(distinct cs_order_number)
-[_LIMITC];
-
-
+ ) subq;
+SELECT 1 [_LIMITC];

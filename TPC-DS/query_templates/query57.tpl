@@ -39,12 +39,12 @@
 
  define _LIMIT=100;
 
- with v1 as(
+with v1 as(
  select i_category, i_brand,
         cc_name,
         d_year, d_moy,
-        sum(cs_sales_price) sum_sales,
-        avg(sum(cs_sales_price)) over
+        COUNT(CAST((cs_sales_price) AS VARCHAR)) sum_sales,
+        avg(COUNT(CAST((cs_sales_price) AS VARCHAR))) over
           (partition by i_category, i_brand,
                      cc_name, d_year)
           avg_monthly_sales,
@@ -77,11 +77,11 @@
        v1. cc_name = v1_lead. cc_name and
        v1.rn = v1_lag.rn + 1 and
        v1.rn = v1_lead.rn - 1)
- [_LIMITA] select [_LIMITB] *
+  select  *
  from v2
  where  d_year = [YEAR] and
         avg_monthly_sales > 0 and
         case when avg_monthly_sales > 0 then abs(sum_sales - avg_monthly_sales) / avg_monthly_sales else null end > 0.1
  order by sum_sales - avg_monthly_sales, [ORDERBY]
- [_LIMITC];
-
+ ;
+SELECT 1 [_LIMITC];

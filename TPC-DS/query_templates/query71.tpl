@@ -35,8 +35,8 @@
   define YEAR= random(1998, 2002, uniform);
  define MONTH=random(11,12,uniform);
 
- select i_brand_id brand_id, i_brand brand,t_hour,t_minute,
- 	sum(ext_price) ext_price
+CREATE TEMP TABLE t_temp_4114 AS SELECT * FROM ( select i_brand_id brand_id, i_brand brand,t_hour,t_minute,
+ 	COUNT(CAST((ext_price) AS VARCHAR)) ext_price
  from item, (select ws_ext_sales_price as ext_price, 
                         ws_sold_date_sk as sold_date_sk,
                         ws_item_sk as sold_item_sk,
@@ -71,4 +71,4 @@
    and (t_meal_time = 'breakfast' or t_meal_time = 'dinner')
  group by i_brand, i_brand_id,t_hour,t_minute
  order by ext_price desc, i_brand_id
- ;
+  ) subq;

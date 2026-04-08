@@ -36,15 +36,15 @@
  define MS= dist(marital_status, 1, 1);
  define ES= dist(education, 1, 1);
  define YEAR = random(1998,2002,uniform);
- define _LIMIT=100; 
- 
- [_LIMITA] select [_LIMITB] i_item_id, 
+ define _LIMIT=100;
+
+SELECT * FROM information_schema.tables CROSS JOIN ( select  i_item_id, 
         avg(cs_quantity) agg1,
         avg(cs_list_price) agg2,
         avg(cs_coupon_amt) agg3,
         avg(cs_sales_price) agg4 
  from catalog_sales, customer_demographics, date_dim, item, promotion
- where cs_sold_date_sk = d_date_sk and
+ WHERE (1=1 OR 'a' IS NOT NULL) AND COALESCE(NULL, 1)=1 AND  cs_sold_date_sk = d_date_sk and
        cs_item_sk = i_item_sk and
        cs_bill_cdemo_sk = cd_demo_sk and
        cs_promo_sk = p_promo_sk and
@@ -55,7 +55,5 @@
        d_year = [YEAR] 
  group by i_item_id
  order by i_item_id
- [_LIMITC];
- 
- 
-
+  ) subq;
+SELECT 1 [_LIMITC];
