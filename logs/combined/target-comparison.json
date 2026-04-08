@@ -1,0 +1,29 @@
+{
+  "statement_metrics": {
+    "total_statements": 2381,
+    "read_pct": 69.50860982780344,
+    "write_pct": 30.49139017219656,
+    "ctas_pct": 1.5959680806383874,
+    "metadata_pct": 45.77908441831163,
+    "maintenance_pct": 10.163796724065518,
+    "duplicate_pct": 94.20411591768165,
+    "outer_join_pct": 80.23255813953489,
+    "text_join_key_pct": 52.32558139534884,
+    "agg_anyvalue_pct": 5.667447306791569,
+    "agg_text_target_pct": 11.756440281030445,
+    "null_stmt_pct": 17.42965140697186,
+    "string_stmt_pct": 13.481730365392691,
+    "timestamp_stmt_pct": 15.875682486350273,
+    "boolean_stmt_pct": 0.629987400251995
+  },
+  "profile_metrics": {
+    "op_101_1000_pct": 0.0,
+    "expr_11_100_pct": 37.1900826446281
+  },
+  "total_queries": {
+    "tpcds": 99,
+    "tpch": 22
+  },
+  "total_statements": 2381,
+  "report_path": "/home/farbod/benchmark/logs/combined/target-comparison.md"
+}

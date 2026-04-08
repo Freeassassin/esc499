@@ -18,6 +18,10 @@ from starrocks.common import default_config, mysql_conn
 from pipeline_common import load_statements, normalize_sql, write_summary
 
 
+def split_statements(sql_text: str) -> list[str]:
+    return [statement.strip() for statement in sql_text.split(";") if statement.strip()]
+
+
 def cedar_conninfo(args: argparse.Namespace) -> str:
     return (
         f"host={args.cedar_host} port={args.cedar_port} "
@@ -34,7 +38,12 @@ def execute_duckdb(args: argparse.Namespace, statements: list[tuple[int, str, st
     for query_id, source_file, sql_text in statements:
         start = time.perf_counter()
         try:
-            rows = con.execute(normalize_sql("duckdb", sql_text)).fetchall()
+            row_count = 0
+            normalized = normalize_sql("duckdb", sql_text)
+            for stmt in split_statements(normalized):
+                result = con.execute(stmt)
+                if result.description is not None:
+                    row_count = len(result.fetchall())
             elapsed = time.perf_counter() - start
             summary.append(
                 {
@@ -42,10 +51,10 @@ def execute_duckdb(args: argparse.Namespace, statements: list[tuple[int, str, st
                     "file": source_file,
                     "status": "ok",
                     "elapsed_sec": round(elapsed, 6),
-                    "row_count": len(rows),
+                    "row_count": row_count,
                 }
             )
-            print(f"ok:q{query_id}:rows={len(rows)}:sec={elapsed:.4f}")
+            print(f"ok:q{query_id}:rows={row_count}:sec={elapsed:.4f}")
         except Exception as exc:  # noqa: BLE001
             elapsed = time.perf_counter() - start
             summary.append(
@@ -70,9 +79,13 @@ def execute_cedardb(args: argparse.Namespace, statements: list[tuple[int, str, s
         for query_id, source_file, sql_text in statements:
             start = time.perf_counter()
             try:
+                row_count = 0
+                normalized = normalize_sql("cedardb", sql_text)
                 with conn.cursor() as cur:
-                    cur.execute(normalize_sql("cedardb", sql_text))  # type: ignore[arg-type]
-                    rows = cur.fetchall()
+                    for stmt in split_statements(normalized):
+                        cur.execute(stmt)  # type: ignore[arg-type]
+                        if cur.description is not None:
+                            row_count = len(cur.fetchall())
                 elapsed = time.perf_counter() - start
                 summary.append(
                     {
@@ -80,10 +93,10 @@ def execute_cedardb(args: argparse.Namespace, statements: list[tuple[int, str, s
                         "file": source_file,
                         "status": "ok",
                         "elapsed_sec": round(elapsed, 6),
-                        "row_count": len(rows),
+                        "row_count": row_count,
                     }
                 )
-                print(f"ok:q{query_id}:rows={len(rows)}:sec={elapsed:.4f}")
+                print(f"ok:q{query_id}:rows={row_count}:sec={elapsed:.4f}")
             except Exception as exc:  # noqa: BLE001
                 elapsed = time.perf_counter() - start
                 summary.append(
@@ -114,9 +127,16 @@ def execute_postgresql(args: argparse.Namespace, statements: list[tuple[int, str
         for query_id, source_file, sql_text in statements:
             start = time.perf_counter()
             try:
+                row_count = 0
+                normalized = normalize_sql("postgresql", sql_text)
                 with conn.cursor() as cur:
-                    cur.execute(normalize_sql("postgresql", sql_text))  # type: ignore[arg-type]
-                    rows = cur.fetchall()
+                    # Keep PostgreSQL execution as a single script per query file.
+                    cur.execute(normalized)  # type: ignore[arg-type]
+                    while True:
+                        if cur.description is not None:
+                            row_count = len(cur.fetchall())
+                        if not cur.nextset():
+                            break
                 elapsed = time.perf_counter() - start
                 summary.append(
                     {
@@ -124,10 +144,10 @@ def execute_postgresql(args: argparse.Namespace, statements: list[tuple[int, str
                         "file": source_file,
                         "status": "ok",
                         "elapsed_sec": round(elapsed, 6),
-                        "row_count": len(rows),
+                        "row_count": row_count,
                     }
                 )
-                print(f"ok:q{query_id}:rows={len(rows)}:sec={elapsed:.4f}")
+                print(f"ok:q{query_id}:rows={row_count}:sec={elapsed:.4f}")
             except Exception as exc:  # noqa: BLE001
                 elapsed = time.perf_counter() - start
                 summary.append(
@@ -159,9 +179,13 @@ def execute_starrocks(args: argparse.Namespace, statements: list[tuple[int, str,
         for query_id, source_file, sql_text in statements:
             start = time.perf_counter()
             try:
+                row_count = 0
+                normalized = normalize_sql("starrocks", sql_text)
                 with conn.cursor() as cur:
-                    cur.execute(normalize_sql("starrocks", sql_text))
-                    rows = list(cur.fetchall()) if cur.description else []
+                    for stmt in split_statements(normalized):
+                        cur.execute(stmt)
+                        if cur.description:
+                            row_count = len(list(cur.fetchall()))
                 elapsed = time.perf_counter() - start
                 summary.append(
                     {
@@ -169,10 +193,10 @@ def execute_starrocks(args: argparse.Namespace, statements: list[tuple[int, str,
                         "file": source_file,
                         "status": "ok",
                         "elapsed_sec": round(elapsed, 6),
-                        "row_count": len(rows),
+                        "row_count": row_count,
                     }
                 )
-                print(f"ok:q{query_id}:rows={len(rows)}:sec={elapsed:.4f}")
+                print(f"ok:q{query_id}:rows={row_count}:sec={elapsed:.4f}")
             except Exception as exc:  # noqa: BLE001
                 elapsed = time.perf_counter() - start
                 summary.append(

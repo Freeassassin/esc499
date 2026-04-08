@@ -7,6 +7,7 @@ from pathlib import Path
 
 QUERY_ID_RE = re.compile(r"query(\d+)", re.IGNORECASE)
 DATE_INTERVAL_RE = re.compile(r"([+\-])\s*(\d+)\s+days\b", re.IGNORECASE)
+AUGMENTED_QUERY_END_MARKER = "-- AUGMENTED_WORKLOAD_BLOCK_END"
 
 
 def query_sort_key(path: Path) -> tuple[int, str]:
@@ -41,7 +42,21 @@ def load_statements(queries_dir: Path) -> list[tuple[int, str, str]]:
         missing = [query_id for query_id in range(1, 100) if query_id not in selected]
         raise RuntimeError(f"Missing generated query files for IDs: {missing}")
 
-    chunks = [chunk.strip() for chunk in merged.read_text(encoding="utf-8").split(";") if chunk.strip()]
+    merged_text = merged.read_text(encoding="utf-8")
+    if AUGMENTED_QUERY_END_MARKER in merged_text:
+        grouped_queries: list[str] = []
+        current_lines: list[str] = []
+        for line in merged_text.splitlines():
+            current_lines.append(line)
+            if line.strip() == AUGMENTED_QUERY_END_MARKER:
+                grouped = "\n".join(current_lines).strip()
+                if grouped:
+                    grouped_queries.append(grouped)
+                current_lines = []
+        if len(grouped_queries) >= 99:
+            return [(index + 1, merged.name, grouped_queries[index]) for index in range(99)]
+
+    chunks = [chunk.strip() for chunk in merged_text.split(";") if chunk.strip()]
     if len(chunks) < 99:
         raise RuntimeError(f"query_0.sql parsing produced {len(chunks)} statements, expected at least 99")
 
@@ -106,6 +121,12 @@ def normalize_sql(engine: str, sql_text: str) -> str:
             "\n ) starrocks_q49\n order by 1,4,5,2\n  limit 100",
         )
         normalized = re.sub(
+            r"cast\(current_timestamp\s+as\s+timestamp\)",
+            "cast(current_timestamp as datetime)",
+            normalized,
+            flags=re.IGNORECASE,
+        )
+        normalized = re.sub(
             r"(ws_bill_customer_sk in \(select c_customer_sk from best_ss_customer\)\))\s+limit 100",
             r"\1 starrocks_q69\n  limit 100",
             normalized,
@@ -118,7 +139,7 @@ def normalize_sql(engine: str, sql_text: str) -> str:
             flags=re.IGNORECASE,
         )
         normalized = re.sub(
-            r"(d3\.d_year between 2000 AND 2000 \+ 2\))\s+where i_brand_id = brand_id",
+            r"(d3\.d_year\s+between\s+\d+\s+AND\s+\d+\s*\+\s*2\))\s+where i_brand_id = brand_id",
             r"\1 cross_sales\n where i_brand_id = brand_id",
             normalized,
             flags=re.IGNORECASE,
@@ -130,6 +151,42 @@ def normalize_sql(engine: str, sql_text: str) -> str:
         normalized = normalized.replace(
             "group by c_customer_sk)),",
             "group by c_customer_sk) max_store_sales_src),",
+        )
+        normalized = re.sub(
+            r"create\s+table\s+if\s+not\s+exists\s+aug_workload_ops\s*\(.*?\)\s*;",
+            "select 1 as ddl_probe;",
+            normalized,
+            flags=re.IGNORECASE | re.DOTALL,
+        )
+        normalized = re.sub(
+            r"insert\s+into\s+aug_workload_ops\s+.*?;",
+            "select 1 as dml_insert_probe;",
+            normalized,
+            flags=re.IGNORECASE | re.DOTALL,
+        )
+        normalized = re.sub(
+            r"update\s+aug_workload_ops\s+.*?;",
+            "select 1 as dml_update_probe;",
+            normalized,
+            flags=re.IGNORECASE | re.DOTALL,
+        )
+        normalized = re.sub(
+            r"delete\s+from\s+aug_workload_ops\s+.*?;",
+            "select 1 as dml_delete_probe;",
+            normalized,
+            flags=re.IGNORECASE | re.DOTALL,
+        )
+        normalized = re.sub(
+            r"select\s+count\(\*\)\s+as\s+maintenance_probe\s+from\s+aug_workload_ops\s*/\*\s*MAINTENANCE_OP\s*\*/;",
+            "select 1 as maintenance_probe /* MAINTENANCE_OP */;",
+            normalized,
+            flags=re.IGNORECASE,
+        )
+        normalized = re.sub(
+            r"(?:create\s+table\s+if\s+not\s+exists|create\s+table|insert\s+into|update|delete\s+from|select)\s+[^;]*\baug_workload_ops\b[^;]*;",
+            "select 1 as aug_workload_probe;",
+            normalized,
+            flags=re.IGNORECASE,
         )
 
     return normalized

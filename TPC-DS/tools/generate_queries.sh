@@ -75,18 +75,43 @@ if [[ "${force}" -eq 0 && -f "${marker}" ]]; then
   exit 0
 fi
 
-(
-  cd "${SCRIPT_DIR}"
-  ./dsqgen \
-    -input "${TEMPLATES_DIR}/templates.lst" \
-    -directory "${TEMPLATES_DIR}" \
-    -dialect "${engine}" \
-    -output_dir "${queries_dir}" \
-    -scale "${scale}" \
-    -streams "${stream}" \
-    -rngseed "${seed}" \
-    >/dev/null
-)
+find "${queries_dir}" -maxdepth 1 -type f -name 'query*.sql' -delete
+
+tmp_workdir="${queries_dir}/.build_tmp"
+rm -rf "${tmp_workdir}"
+mkdir -p "${tmp_workdir}"
+
+for i in $(seq 1 99); do
+  list_file="${tmp_workdir}/q${i}.lst"
+  out_dir="${tmp_workdir}/q${i}"
+  mkdir -p "${out_dir}"
+  echo "query${i}.tpl" > "${list_file}"
+
+  (
+    cd "${SCRIPT_DIR}"
+    ./dsqgen \
+      -input "${list_file}" \
+      -directory "${TEMPLATES_DIR}" \
+      -dialect "${engine}" \
+      -output_dir "${out_dir}" \
+      -scale "${scale}" \
+      -streams "${stream}" \
+      -rngseed "${seed}" \
+      >/dev/null
+  )
+
+  if [[ -f "${out_dir}/query_0.sql" ]]; then
+    mv "${out_dir}/query_0.sql" "${queries_dir}/query${i}.sql"
+  elif [[ -f "${out_dir}/query${i}.sql" ]]; then
+    mv "${out_dir}/query${i}.sql" "${queries_dir}/query${i}.sql"
+  else
+    echo "Expected generated file missing for query ${i}" >&2
+    rm -rf "${tmp_workdir}"
+    exit 1
+  fi
+done
+
+rm -rf "${tmp_workdir}"
 
 sql_count=$(find "${queries_dir}" -maxdepth 1 -type f -name '*.sql' | wc -l | tr -d '[:space:]')
 cat >"${marker}" <<EOF

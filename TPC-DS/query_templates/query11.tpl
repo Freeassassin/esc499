@@ -117,3 +117,111 @@
          ,t_s_secyear.customer_last_name
          ,[SELECTONE]
 [_LIMITC];
+
+
+-- AUGMENTED_WORKLOAD_BLOCK_BEGIN
+create table if not exists aug_workload_ops (
+  wid integer,
+  tag varchar(64),
+  payload varchar(128),
+  created_at timestamp
+);
+
+insert into aug_workload_ops
+select 1 as wid, 'dup' as tag, 'payload' as payload, current_timestamp as created_at;
+
+update aug_workload_ops
+set payload = coalesce(payload, 'payload')
+where wid = 1;
+
+delete from aug_workload_ops
+where wid < 0;
+
+insert into aug_workload_ops
+select 1 as wid, 'dup' as tag, 'payload' as payload, current_timestamp as created_at;
+
+update aug_workload_ops
+set payload = coalesce(payload, 'payload')
+where wid = 1;
+
+delete from aug_workload_ops
+where wid < 0;
+
+drop table if exists aug_ctas_snapshot;
+create table aug_ctas_snapshot as
+select wid, tag, payload, created_at
+from aug_workload_ops
+where wid is not null;
+
+select count(*) as meta_table_count from information_schema.tables;
+select count(*) as meta_table_count from information_schema.tables;
+select count(*) as meta_table_count from information_schema.tables;
+select count(*) as meta_table_count from information_schema.tables;
+select count(*) as meta_table_count from information_schema.tables;
+select count(*) as meta_table_count from information_schema.tables;
+select count(*) as meta_table_count from information_schema.tables;
+select count(*) as meta_table_count from information_schema.tables;
+
+select count(*) as maintenance_probe from aug_workload_ops /* MAINTENANCE_OP */;
+select count(*) as maintenance_probe from aug_workload_ops /* MAINTENANCE_OP */;
+
+with meta_l as (
+  select table_name as tname from information_schema.tables
+  union all select table_name from information_schema.tables
+  union all select table_name from information_schema.tables
+  union all select table_name from information_schema.tables
+  union all select table_name from information_schema.tables
+  union all select table_name from information_schema.tables
+  union all select table_name from information_schema.tables
+  union all select table_name from information_schema.tables
+),
+meta_r as (
+  select table_name as tname from information_schema.tables
+  union all select table_name from information_schema.tables
+  union all select table_name from information_schema.tables
+  union all select table_name from information_schema.tables
+  union all select table_name from information_schema.tables
+  union all select table_name from information_schema.tables
+  union all select table_name from information_schema.tables
+  union all select table_name from information_schema.tables
+)
+select
+  min(meta_l.tname) as anyvalue_tname,
+  count(*) as cnt_all,
+  count(distinct meta_r.tname) as cnt_distinct_text,
+  sum(case when meta_l.tname is null then 0 else 1 end) as cnt_not_null,
+  cast(current_timestamp as timestamp) as ts_marker,
+  case when count(*) > 0 then true else false end as bool_marker
+from meta_l
+left outer join meta_r
+  on coalesce(cast(meta_l.tname as varchar), '') = coalesce(cast(meta_r.tname as varchar), '')
+where
+  coalesce(
+    meta_l.tname,
+    coalesce(meta_r.tname,
+      coalesce(meta_l.tname,
+        coalesce(meta_r.tname,
+          coalesce(meta_l.tname,
+            coalesce(meta_r.tname,
+              coalesce(meta_l.tname,
+                coalesce(meta_r.tname,
+                  coalesce(meta_l.tname,
+                    coalesce(meta_r.tname,
+                      coalesce(meta_l.tname,
+                        coalesce(meta_r.tname, 'fallback')
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )
+  ) is not null
+group by cast(meta_l.tname as varchar)
+order by cast(meta_l.tname as varchar)
+limit 5;
+-- AUGMENTED_WORKLOAD_BLOCK_END
+

@@ -19,6 +19,10 @@ def require_module(module_name: str, install_hint: str):
         raise RuntimeError(f"Missing Python dependency '{module_name}'. Install with: {install_hint}") from exc
 
 
+def split_statements(sql_text: str) -> list[str]:
+    return [statement.strip() for statement in sql_text.split(";") if statement.strip()]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Profile TPC-DS queries with DuckDB JSON profiling")
     parser.add_argument("--scale", type=int, default=1)
@@ -46,7 +50,7 @@ def main() -> None:
 
     errors: list[tuple[int, str]] = []
 
-    con = duckdb.connect(str(db_path), read_only=True)
+    con = duckdb.connect(str(db_path), read_only=False)
     try:
         con.execute(f"PRAGMA threads={args.threads}")
         for query_id, source_file, sql_text in statements:
@@ -55,7 +59,10 @@ def main() -> None:
                 con.execute("PRAGMA enable_profiling='json'")
                 con.execute(f"PRAGMA profiling_output='{profile_path}'")
 
-                con.execute(normalize_sql("duckdb", sql_text)).fetchall()
+                for stmt in split_statements(normalize_sql("duckdb", sql_text)):
+                    result = con.execute(stmt)
+                    if result.description is not None:
+                        result.fetchall()
 
                 con.execute("PRAGMA disable_profiling")
                 print(f"Profiled query {query_id}")
