@@ -37,7 +37,8 @@ define AGGCELSE= text({"ss_net_paid",1},{"ss_net_paid_inc_tax",1},{"ss_net_profi
 define RC=ulist(random(1, rowcount("store_sales")/5,uniform),5);
 
 select case when (select count(*) 
-                  from store_sales 
+                  from store_sales
+     left outer join promotion on ss_promo_sk = p_promo_sk 
                   where ss_quantity between 1 and 20) > [RC.1]
             then (select avg([AGGCTHEN]) 
                   from store_sales 

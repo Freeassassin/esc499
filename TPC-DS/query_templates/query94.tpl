@@ -40,10 +40,11 @@ define _LIMIT=100;
 
 [_LIMITA] select [_LIMITB] 
    count(distinct ws_order_number) as "order count"
-  ,sum(ws_ext_ship_cost) as "total shipping cost"
-  ,sum(ws_net_profit) as "total net profit"
+  ,sum(COALESCE(ws_ext_ship_cost, 0)) as "total shipping cost"
+  ,sum(COALESCE(ws_net_profit, 0)) as "total net profit"
 from
    web_sales ws1
+     left outer join web_page on ws_web_page_sk = wp_web_page_sk
   ,date_dim
   ,customer_address
   ,web_site
@@ -62,6 +63,7 @@ and exists (select *
 and not exists(select *
                from web_returns wr1
                where ws1.ws_order_number = wr1.wr_order_number)
-order by count(distinct ws_order_number)
+and ca_state is not null
+ order by count(distinct ws_order_number)
 [_LIMITC];
 

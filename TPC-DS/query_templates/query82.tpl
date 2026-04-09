@@ -41,7 +41,9 @@
  [_LIMITA] select [_LIMITB] i_item_id
        ,i_item_desc
        ,i_current_price
+ ,count(distinct i_item_id) as cnt_distinct_i_item_id
  from item, inventory, date_dim, store_sales
+     left outer join promotion on ss_promo_sk = p_promo_sk
  where i_current_price between [PRICE] and [PRICE]+30
  and inv_item_sk = i_item_sk
  and d_date_sk=inv_date_sk

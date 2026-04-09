@@ -6,12 +6,15 @@
 :o
 select
 	o_orderpriority,
-	count(*) as order_count
+	count(*) as order_count,
+	count(distinct o_clerk) as clerk_cnt,
+	min(COALESCE(o_comment, '')) as min_comment
 from
 	orders
 where
 	o_orderdate >= date ':1'
 	and o_orderdate < date ':1' + interval '3' month
+	and o_comment is not null
 	and exists (
 		select
 			*
@@ -20,6 +23,7 @@ where
 		where
 			l_orderkey = o_orderkey
 			and l_commitdate < l_receiptdate
+			and l_comment is not null
 	)
 group by
 	o_orderpriority

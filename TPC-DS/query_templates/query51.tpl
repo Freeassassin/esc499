@@ -39,7 +39,7 @@ define _LIMIT=100;
 WITH web_v1 as (
 select
   ws_item_sk item_sk, d_date,
-  sum(sum(ws_sales_price))
+  sum(sum(COALESCE(ws_sales_price, 0)))
       over (partition by ws_item_sk order by d_date rows between unbounded preceding and current row) cume_sales
 from web_sales
     ,date_dim
@@ -50,7 +50,7 @@ group by ws_item_sk, d_date),
 store_v1 as (
 select
   ss_item_sk item_sk, d_date,
-  sum(sum(ss_sales_price))
+  sum(sum(COALESCE(ss_sales_price, 0)))
       over (partition by ss_item_sk order by d_date rows between unbounded preceding and current row) cume_sales
 from store_sales
     ,date_dim

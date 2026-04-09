@@ -37,9 +37,11 @@
  define _LIMIT=100;
  
  [_LIMITA] select [_LIMITB] a.ca_state state, count(*) cnt
+ ,count(distinct ca_state) as cnt_distinct_ca_state
  from customer_address a
      ,customer c
      ,store_sales s
+     left outer join promotion on ss_promo_sk = p_promo_sk
      ,date_dim d
      ,item i
  where       a.ca_address_sk = c.c_current_addr_sk
@@ -55,6 +57,7 @@
              (select avg(j.i_current_price) 
  	     from item j 
  	     where j.i_category = i.i_category)
+ and i_category is not null
  group by a.ca_state
  having count(*) >= 10
  order by cnt, a.ca_state 

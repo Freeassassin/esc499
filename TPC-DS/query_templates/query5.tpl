@@ -38,8 +38,8 @@
  
  with ssr as
  (select s_store_id,
-        sum(sales_price) as sales,
-        sum(profit) as profit,
+        sum(COALESCE(sales_price, 0)) as sales,
+        sum(COALESCE(profit, 0)) as profit,
         sum(return_amt) as returns,
         sum(net_loss) as profit_loss
  from

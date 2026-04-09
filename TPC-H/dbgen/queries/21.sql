@@ -6,17 +6,17 @@
 :o
 select
 	s_name,
-	count(*) as numwait
+	count(*) as numwait,
+	min(COALESCE(l1.l_shipmode, '')) as min_shipmode
 from
-	supplier,
-	lineitem l1,
-	orders,
-	nation
+	supplier
+	left outer join lineitem l1 on s_suppkey = l1.l_suppkey
+	inner join orders on o_orderkey = l1.l_orderkey
+	inner join nation on s_nationkey = n_nationkey
 where
-	s_suppkey = l1.l_suppkey
-	and o_orderkey = l1.l_orderkey
-	and o_orderstatus = 'F'
+	o_orderstatus = 'F'
 	and l1.l_receiptdate > l1.l_commitdate
+	and l1.l_suppkey is not null
 	and exists (
 		select
 			*
@@ -36,8 +36,8 @@ where
 			and l3.l_suppkey <> l1.l_suppkey
 			and l3.l_receiptdate > l3.l_commitdate
 	)
-	and s_nationkey = n_nationkey
 	and n_name = ':1'
+	and COALESCE(s_comment, '') <> ''
 group by
 	s_name
 order by

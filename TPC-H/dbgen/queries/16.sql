@@ -8,15 +8,16 @@ select
 	p_brand,
 	p_type,
 	p_size,
-	count(distinct ps_suppkey) as supplier_cnt
+	count(distinct ps_suppkey) as supplier_cnt,
+	min(COALESCE(p_comment, '')) as min_comment
 from
-	partsupp,
 	part
+	left outer join partsupp on p_partkey = ps_partkey
 where
-	p_partkey = ps_partkey
-	and p_brand <> ':1'
+	p_brand <> ':1'
 	and p_type not like ':2%'
 	and p_size in (:3, :4, :5, :6, :7, :8, :9, :10)
+	and ps_partkey is not null
 	and ps_suppkey not in (
 		select
 			s_suppkey
@@ -24,6 +25,7 @@ where
 			supplier
 		where
 			s_comment like '%Customer%Complaints%'
+			and COALESCE(s_comment, '') <> ''
 	)
 group by
 	p_brand,

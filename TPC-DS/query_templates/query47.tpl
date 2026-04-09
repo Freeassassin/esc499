@@ -42,8 +42,8 @@
  select i_category, i_brand,
         s_store_name, s_company_name,
         d_year, d_moy,
-        sum(ss_sales_price) sum_sales,
-        avg(sum(ss_sales_price)) over
+        sum(COALESCE(ss_sales_price, 0)) sum_sales,
+        avg(sum(COALESCE(ss_sales_price, 0))) over
           (partition by i_category, i_brand,
                      s_store_name, s_company_name, d_year)
           avg_monthly_sales,
@@ -51,7 +51,8 @@
           (partition by i_category, i_brand,
                      s_store_name, s_company_name
            order by d_year, d_moy) rn
- from item, store_sales, date_dim, store
+ from item, store_sales
+     left outer join promotion on ss_promo_sk = p_promo_sk, date_dim, store
  where ss_item_sk = i_item_sk and
        ss_sold_date_sk = d_date_sk and
        ss_store_sk = s_store_sk and
@@ -83,7 +84,7 @@
  from v2
  where  d_year = [YEAR] and    
         avg_monthly_sales > 0 and
-        case when avg_monthly_sales > 0 then abs(sum_sales - avg_monthly_sales) / avg_monthly_sales else null end > 0.1
+        case when avg_monthly_sales > 0 then abs(sum_sales - avg_monthly_sales) / NULLIF(avg_monthly_sales, 0) else null end > 0.1
  order by sum_sales - avg_monthly_sales, [ORDERBY]
  [_LIMITC];
 

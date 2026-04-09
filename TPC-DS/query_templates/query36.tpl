@@ -45,7 +45,7 @@
  define _LIMIT=100;
  
  [_LIMITA] select [_LIMITB] 
-    sum(ss_net_profit)/sum(ss_ext_sales_price) as gross_margin
+    sum(COALESCE(ss_net_profit, 0))/sum(COALESCE(ss_ext_sales_price, 0)) as gross_margin
    ,i_category
    ,i_class
    ,grouping(i_category)+grouping(i_class) as lochierarchy
@@ -55,6 +55,7 @@
  	order by sum(ss_net_profit)/sum(ss_ext_sales_price) asc) as rank_within_parent
  from
     store_sales
+     left outer join promotion on ss_promo_sk = p_promo_sk
    ,date_dim       d1
    ,item
    ,store

@@ -43,6 +43,7 @@
         avg(ss_list_price) agg2,
         avg(ss_coupon_amt) agg3,
         avg(ss_sales_price) agg4 
+ ,count(distinct i_item_id) as cnt_distinct_i_item_id
  from store_sales, customer_demographics, date_dim, item, promotion
  where ss_sold_date_sk = d_date_sk and
        ss_item_sk = i_item_sk and
@@ -53,6 +54,7 @@
        cd_education_status = '[ES]' and
        (p_channel_email = 'N' or p_channel_event = 'N') and
        d_year = [YEAR] 
+ and cd_gender is not null
  group by i_item_id
  order by i_item_id
  [_LIMITC];

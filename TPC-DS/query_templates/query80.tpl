@@ -38,7 +38,7 @@
  
  with ssr as
  (select  s_store_id as store_id,
-          sum(ss_ext_sales_price) as sales,
+          sum(COALESCE(ss_ext_sales_price, 0)) as sales,
           sum(coalesce(sr_return_amt, 0)) as returns,
           sum(ss_net_profit - coalesce(sr_net_loss, 0)) as profit
   from store_sales left outer join store_returns on
@@ -59,7 +59,7 @@
  ,
  csr as
  (select  cp_catalog_page_id as catalog_page_id,
-          sum(cs_ext_sales_price) as sales,
+          sum(COALESCE(cs_ext_sales_price, 0)) as sales,
           sum(coalesce(cr_return_amount, 0)) as returns,
           sum(cs_net_profit - coalesce(cr_net_loss, 0)) as profit
   from catalog_sales left outer join catalog_returns on

@@ -45,7 +45,9 @@
         sum(case when (d_day_name='Thursday') then ss_sales_price else null end) thu_sales,
         sum(case when (d_day_name='Friday') then ss_sales_price else null end) fri_sales,
         sum(case when (d_day_name='Saturday') then ss_sales_price else null end) sat_sales
- from date_dim, store_sales, store
+ ,count(distinct s_store_name) as cnt_distinct_s_store_name
+ from date_dim, store_sales
+     left outer join promotion on ss_promo_sk = p_promo_sk, store
  where d_date_sk = ss_sold_date_sk and
        s_store_sk = ss_store_sk and
        s_gmt_offset = [GMT] and

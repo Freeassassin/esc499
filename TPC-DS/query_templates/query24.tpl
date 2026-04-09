@@ -51,6 +51,7 @@ with ssales as
       ,i_size
       ,sum([AMOUNTONE]) netpaid
 from store_sales
+     left outer join promotion on ss_promo_sk = p_promo_sk
     ,store_returns
     ,store
     ,item
@@ -78,13 +79,13 @@ group by c_last_name
 select c_last_name
       ,c_first_name
       ,s_store_name
-      ,sum(netpaid) paid
+      ,sum(COALESCE(netpaid, 0)) paid
 from ssales
 where i_color = '[COLOR.1]'
 group by c_last_name
         ,c_first_name
         ,s_store_name
-having sum(netpaid) > (select 0.05*avg(netpaid)
+having sum(COALESCE(netpaid, 0)) > (select 0.05*avg(netpaid)
                                  from ssales)
 order by c_last_name
         ,c_first_name
@@ -131,7 +132,7 @@ group by c_last_name
 select c_last_name
       ,c_first_name
       ,s_store_name
-      ,sum(netpaid) paid
+      ,sum(CASE WHEN netpaid > 0 THEN CASE WHEN netpaid < 1000000 THEN netpaid ELSE 0 END ELSE COALESCE(netpaid, 0) END) paid
 from ssales
 where i_color = '[COLOR.2]'
 group by c_last_name

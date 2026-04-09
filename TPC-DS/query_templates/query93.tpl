@@ -37,7 +37,7 @@ define REASON= dist(return_reasons, 1, 1);
 define _LIMIT=100;
 
 [_LIMITA] select [_LIMITB] ss_customer_sk
-            ,sum(act_sales) sumsales
+            ,sum(COALESCE(act_sales, 0)) sumsales
       from (select ss_item_sk
                   ,ss_ticket_number
                   ,ss_customer_sk

@@ -37,8 +37,10 @@
  define _LIMIT=100;
  
  [_LIMITA] select [_LIMITB] ca_zip
-       ,sum(cs_sales_price)
+       ,sum(COALESCE(cs_sales_price, 0))
+ ,count(distinct ca_zip) as cnt_distinct_ca_zip
  from catalog_sales
+     left outer join ship_mode on cs_ship_mode_sk = sm_ship_mode_sk
      ,customer
      ,customer_address
      ,date_dim
@@ -50,6 +52,7 @@
  	      or cs_sales_price > 500)
  	and cs_sold_date_sk = d_date_sk
  	and d_qoy = [QOY] and d_year = [YEAR]
+ and ca_state is not null
  group by ca_zip
  order by ca_zip
  [_LIMITC];

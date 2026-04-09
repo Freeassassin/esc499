@@ -44,8 +44,8 @@ WITH all_sales AS (
        ,i_class_id
        ,i_category_id
        ,i_manufact_id
-       ,SUM(sales_cnt) AS sales_cnt
-       ,SUM(sales_amt) AS sales_amt
+       ,sum(COALESCE(sales_cnt, 0)) AS sales_cnt
+       ,sum(COALESCE(sales_amt, 0)) AS sales_amt
  FROM (SELECT d_year
              ,i_brand_id
              ,i_class_id

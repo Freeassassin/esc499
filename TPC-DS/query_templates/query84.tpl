@@ -44,6 +44,7 @@
      ,household_demographics
      ,income_band
      ,store_returns
+     left outer join reason on sr_reason_sk = r_reason_sk
  where ca_city	        =  '[CITY]'
    and c_current_addr_sk = ca_address_sk
    and ib_lower_bound   >=  [INCOME]
@@ -52,6 +53,7 @@
    and cd_demo_sk = c_current_cdemo_sk
    and hd_demo_sk = c_current_hdemo_sk
    and sr_cdemo_sk = cd_demo_sk
+ and ca_city is not null
  order by c_customer_id
  [_LIMITC];
  

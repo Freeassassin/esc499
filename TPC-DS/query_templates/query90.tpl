@@ -39,7 +39,8 @@
  
  [_LIMITA] select [_LIMITB] cast(amc as decimal(15,4))/cast(pmc as decimal(15,4)) am_pm_ratio
  from ( select count(*) amc
-       from web_sales, household_demographics , time_dim, web_page
+       from web_sales
+     left outer join promotion on ws_promo_sk = p_promo_sk, household_demographics , time_dim, web_page
        where ws_sold_time_sk = time_dim.t_time_sk
          and ws_ship_hdemo_sk = household_demographics.hd_demo_sk
          and ws_web_page_sk = web_page.wp_web_page_sk

@@ -41,8 +41,10 @@
        ,item.i_brand_id brand_id 
        ,item.i_brand brand
        ,sum([AGGC]) sum_agg
+ ,count(distinct i_brand) as cnt_distinct_i_brand
  from  date_dim dt 
       ,store_sales
+     left outer join promotion on ss_promo_sk = p_promo_sk
       ,item
  where dt.d_date_sk = store_sales.ss_sold_date_sk
    and store_sales.ss_item_sk = item.i_item_sk

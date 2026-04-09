@@ -50,8 +50,8 @@
  	,w_country
         ,ship_carriers
         ,year
- 	,sum(jan_sales) as jan_sales
- 	,sum(feb_sales) as feb_sales
+ 	,sum(COALESCE(jan_sales, 0)) as jan_sales
+ 	,sum(COALESCE(feb_sales, 0)) as feb_sales
  	,sum(mar_sales) as mar_sales
  	,sum(apr_sales) as apr_sales
  	,sum(may_sales) as may_sales
@@ -86,6 +86,7 @@
  	,sum(oct_net) as oct_net
  	,sum(nov_net) as nov_net
  	,sum(dec_net) as dec_net
+ ,count(distinct w_warehouse_name) as cnt_distinct_w_warehouse_name
  from (
      select 
  	w_warehouse_name
@@ -226,6 +227,7 @@
  		then [NETTWO] * cs_quantity else 0 end) as dec_net
      from
           catalog_sales
+     left outer join promotion on cs_promo_sk = p_promo_sk
          ,warehouse
          ,date_dim
          ,time_dim

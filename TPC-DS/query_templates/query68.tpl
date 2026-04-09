@@ -51,10 +51,11 @@
  from (select ss_ticket_number
              ,ss_customer_sk
              ,ca_city bought_city
-             ,sum(ss_ext_sales_price) extended_price 
-             ,sum(ss_ext_list_price) list_price
+             ,sum(COALESCE(ss_ext_sales_price, 0)) extended_price 
+             ,sum(COALESCE(ss_ext_list_price, 0)) list_price
              ,sum(ss_ext_tax) extended_tax 
        from store_sales
+     left outer join promotion on ss_promo_sk = p_promo_sk
            ,date_dim
            ,store
            ,household_demographics
@@ -76,6 +77,7 @@
  where ss_customer_sk = c_customer_sk
    and customer.c_current_addr_sk = current_addr.ca_address_sk
    and current_addr.ca_city <> bought_city
+ and ca_city is not null
  order by c_last_name
          ,ss_ticket_number
  [_LIMITC];

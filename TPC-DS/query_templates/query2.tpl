@@ -44,7 +44,8 @@
         union all
         select cs_sold_date_sk sold_date_sk
               ,cs_ext_sales_price sales_price
-        from catalog_sales)),
+        from catalog_sales
+     left outer join ship_mode on cs_ship_mode_sk = sm_ship_mode_sk)),
  wswscs as 
  (select d_week_seq,
         sum(case when (d_day_name='Sunday') then sales_price else null end) sun_sales,

@@ -10,11 +10,14 @@ select
 	o_orderkey,
 	o_orderdate,
 	o_totalprice,
-	sum(l_quantity)
+	sum(l_quantity) as sum_qty,
+	min(COALESCE(c_comment, '')) as min_comment,
+	count(distinct l_shipmode) as shipmode_cnt,
+	stddev_samp(l_quantity) as stddev_qty
 from
-	customer,
-	orders,
-	lineitem
+	customer
+	left outer join orders on c_custkey = o_custkey
+	left outer join lineitem on o_orderkey = l_orderkey
 where
 	o_orderkey in (
 		select
@@ -25,8 +28,8 @@ where
 			l_orderkey having
 				sum(l_quantity) > :1
 	)
-	and c_custkey = o_custkey
-	and o_orderkey = l_orderkey
+	and o_orderkey is not null
+	and l_orderkey is not null
 group by
 	c_name,
 	c_custkey,

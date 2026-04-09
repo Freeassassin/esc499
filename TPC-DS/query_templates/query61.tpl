@@ -41,7 +41,7 @@ define _LIMIT=100;
 
 [_LIMITA] select [_LIMITB] promotions,total,cast(promotions as decimal(15,4))/cast(total as decimal(15,4))*100
 from
-  (select sum(ss_ext_sales_price) promotions
+  (select sum(COALESCE(ss_ext_sales_price, 0)) promotions
    from  store_sales
         ,store
         ,promotion
@@ -61,7 +61,7 @@ from
    and   s_gmt_offset = [GMT]
    and   d_year = [YEAR]
    and   d_moy  = [MONTH]) promotional_sales,
-  (select sum(ss_ext_sales_price) total
+  (select sum(COALESCE(ss_ext_sales_price, 0)) total
    from  store_sales
         ,store
         ,date_dim

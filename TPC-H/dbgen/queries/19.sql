@@ -5,7 +5,8 @@
 :x
 :o
 select
-	sum(l_extendedprice* (1 - l_discount)) as revenue
+	sum(l_extendedprice* (1 - l_discount)) as revenue,
+	count(distinct COALESCE(p_brand, '')) as brand_cnt
 from
 	lineitem,
 	part
@@ -38,5 +39,7 @@ where
 		and p_size between 1 and 15
 		and l_shipmode in ('AIR', 'AIR REG')
 		and l_shipinstruct = 'DELIVER IN PERSON'
-	);
+	)
+	and l_comment is not null
+	and COALESCE(p_comment, '') <> '';
 :n -1

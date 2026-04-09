@@ -56,6 +56,7 @@ from (select i_category
                   ,s_store_id
                   ,sum(coalesce(ss_sales_price*ss_quantity,0)) sumsales
             from store_sales
+     left outer join promotion on ss_promo_sk = p_promo_sk
                 ,date_dim
                 ,store
                 ,item

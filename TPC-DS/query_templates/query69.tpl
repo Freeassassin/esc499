@@ -46,6 +46,7 @@
   count(*) cnt2,
   cd_credit_rating,
   count(*) cnt3
+ ,count(distinct cd_gender) as cnt_distinct_cd_gender
  from
   customer c,customer_address ca,customer_demographics
  where
@@ -53,7 +54,8 @@
   ca_state in ('[STATE.1]','[STATE.2]','[STATE.3]') and
   cd_demo_sk = c.c_current_cdemo_sk and 
   exists (select *
-          from store_sales,date_dim
+          from store_sales
+     left outer join promotion on ss_promo_sk = p_promo_sk,date_dim
           where c.c_customer_sk = ss_customer_sk and
                 ss_sold_date_sk = d_date_sk and
                 d_year = [YEAR] and
@@ -70,6 +72,7 @@
                   cs_sold_date_sk = d_date_sk and
                   d_year = [YEAR] and
                   d_moy between [MONTH] and [MONTH]+2))
+ and ca_state is not null
  group by cd_gender,
           cd_marital_status,
           cd_education_status,

@@ -40,9 +40,9 @@ define _LIMIT = 100;
 with ws as
   (select d_year AS ws_sold_year, ws_item_sk,
     ws_bill_customer_sk ws_customer_sk,
-    sum(ws_quantity) ws_qty,
-    sum(ws_wholesale_cost) ws_wc,
-    sum(ws_sales_price) ws_sp
+    sum(COALESCE(ws_quantity, 0)) ws_qty,
+    sum(COALESCE(ws_wholesale_cost, 0)) ws_wc,
+    sum(CASE WHEN ws_sales_price > 0 THEN CASE WHEN ws_sales_price < 1000000 THEN ws_sales_price ELSE 0 END ELSE COALESCE(ws_sales_price, 0) END) ws_sp
    from web_sales
    left join web_returns on wr_order_number=ws_order_number and ws_item_sk=wr_item_sk
    join date_dim on ws_sold_date_sk = d_date_sk

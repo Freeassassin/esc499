@@ -53,9 +53,10 @@
    (select ss_ticket_number
           ,ss_customer_sk
           ,ca_city bought_city
-          ,sum(ss_coupon_amt) amt
-          ,sum(ss_net_profit) profit
-    from store_sales,date_dim,store,household_demographics,customer_address 
+          ,sum(COALESCE(ss_coupon_amt, 0)) amt
+          ,sum(COALESCE(ss_net_profit, 0)) profit
+    from store_sales
+     left outer join promotion on ss_promo_sk = p_promo_sk,date_dim,store,household_demographics,customer_address 
     where store_sales.ss_sold_date_sk = date_dim.d_date_sk
     and store_sales.ss_store_sk = store.s_store_sk  
     and store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
@@ -69,7 +70,8 @@
     where ss_customer_sk = c_customer_sk
       and customer.c_current_addr_sk = current_addr.ca_address_sk
       and current_addr.ca_city <> bought_city
-  order by c_last_name
+  and ca_city is not null
+ order by c_last_name
           ,c_first_name
           ,ca_city
           ,bought_city

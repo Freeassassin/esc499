@@ -94,7 +94,7 @@ with  cross_items as
            ,date_dim
        where ws_sold_date_sk = d_date_sk
          and d_year between [YEAR] and [YEAR] + 2) x)
- [_LIMITA] select [_LIMITB] channel, i_brand_id,i_class_id,i_category_id,sum(sales), sum(number_sales)
+ [_LIMITA] select [_LIMITB] channel, i_brand_id,i_class_id,i_category_id,sum(COALESCE(sales, 0)), sum(COALESCE(number_sales, 0))
  from(
        select 'store' channel, i_brand_id,i_class_id
              ,i_category_id,sum(ss_quantity*ss_list_price) sales

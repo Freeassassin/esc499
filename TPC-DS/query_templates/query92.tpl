@@ -39,9 +39,10 @@ define WSDATE = date([YEAR]+"-01-01",[YEAR]+"-04-01",sales);
 define _LIMIT=100;
 
 [_LIMITA] select [_LIMITB] 
-   sum(ws_ext_discount_amt)  as "Excess Discount Amount" 
+   sum(COALESCE(ws_ext_discount_amt, 0))  as "Excess Discount Amount" 
 from 
-    web_sales 
+    web_sales
+     left outer join web_page on ws_web_page_sk = wp_web_page_sk 
    ,item 
    ,date_dim
 where
@@ -63,6 +64,6 @@ and ws_ext_discount_amt
                              (cast('[WSDATE]' as date) + 90 days)
           and d_date_sk = ws_sold_date_sk 
       ) 
-order by sum(ws_ext_discount_amt)
+order by sum(COALESCE(ws_ext_discount_amt, 0))
 [_LIMITC]; 
 

@@ -42,7 +42,9 @@
        ,avg(ws_quantity)
        ,avg(wr_refunded_cash)
        ,avg(wr_fee)
- from web_sales, web_returns, web_page, customer_demographics cd1,
+ ,count(distinct r_reason_desc) as cnt_distinct_r_reason_desc
+ from web_sales
+     left outer join promotion on ws_promo_sk = p_promo_sk, web_returns, web_page, customer_demographics cd1,
       customer_demographics cd2, customer_address, date_dim, reason 
  where ws_web_page_sk = wp_web_page_sk
    and ws_item_sk = wr_item_sk
@@ -113,7 +115,8 @@
      and ws_net_profit between 50 and 250  
     )
    )
-group by r_reason_desc
+and ca_state is not null
+ group by r_reason_desc
 order by substr(r_reason_desc,1,20)
         ,avg(ws_quantity)
         ,avg(wr_refunded_cash)

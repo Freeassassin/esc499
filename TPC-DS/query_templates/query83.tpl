@@ -40,7 +40,7 @@
  
  with sr_items as
  (select i_item_id item_id,
-        sum(sr_return_quantity) sr_item_qty
+        sum(COALESCE(sr_return_quantity, 0)) sr_item_qty
  from store_returns,
       item,
       date_dim
@@ -56,7 +56,7 @@
  group by i_item_id),
  cr_items as
  (select i_item_id item_id,
-        sum(cr_return_quantity) cr_item_qty
+        sum(COALESCE(cr_return_quantity, 0)) cr_item_qty
  from catalog_returns,
       item,
       date_dim

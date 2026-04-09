@@ -64,7 +64,8 @@
   c.c_current_addr_sk = ca.ca_address_sk and
   cd_demo_sk = c.c_current_cdemo_sk and 
   exists (select *
-          from store_sales,date_dim
+          from store_sales
+     left outer join promotion on ss_promo_sk = p_promo_sk,date_dim
           where c.c_customer_sk = ss_customer_sk and
                 ss_sold_date_sk = d_date_sk and
                 d_year = [YEAR] and

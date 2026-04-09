@@ -42,10 +42,12 @@
        ,i_category 
        ,i_class 
        ,i_current_price
-       ,sum(cs_ext_sales_price) as itemrevenue 
-       ,sum(cs_ext_sales_price)*100/sum(sum(cs_ext_sales_price)) over
+       ,sum(COALESCE(cs_ext_sales_price, 0)) as itemrevenue 
+       ,sum(COALESCE(cs_ext_sales_price, 0))*100/sum(sum(cs_ext_sales_price)) over
            (partition by i_class) as revenueratio
+ ,count(distinct i_item_id) as cnt_distinct_i_item_id
  from	catalog_sales
+     left outer join ship_mode on cs_ship_mode_sk = sm_ship_mode_sk
      ,item 
      ,date_dim
  where cs_item_sk = i_item_sk 
@@ -53,6 +55,7 @@
    and cs_sold_date_sk = d_date_sk
  and d_date between cast('[SDATE]' as date) 
  				and (cast('[SDATE]' as date) + 30 days)
+ and i_category is not null
  group by i_item_id
          ,i_item_desc 
          ,i_category

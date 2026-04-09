@@ -10,21 +10,23 @@ select
 	sum(l_extendedprice * (1 - l_discount)) as revenue,
 	c_acctbal,
 	n_name,
-	c_address,
+	COALESCE(c_address, '') as c_address,
 	c_phone,
-	c_comment
+	COALESCE(c_comment, 'N/A') as c_comment,
+	min(COALESCE(l_shipmode, '')) as min_shipmode,
+	count(distinct l_shipmode) as shipmode_cnt
 from
-	customer,
-	orders,
-	lineitem,
-	nation
+	customer
+	inner join nation on c_nationkey = n_nationkey
+	left outer join orders on c_custkey = o_custkey
+		and o_orderdate >= date ':1'
+		and o_orderdate < date ':1' + interval '3' month
+	left outer join lineitem on l_orderkey = o_orderkey
+		and l_returnflag = 'R'
 where
-	c_custkey = o_custkey
-	and l_orderkey = o_orderkey
-	and o_orderdate >= date ':1'
-	and o_orderdate < date ':1' + interval '3' month
-	and l_returnflag = 'R'
-	and c_nationkey = n_nationkey
+	o_orderkey is not null
+	and l_orderkey is not null
+	and c_comment is not null
 group by
 	c_custkey,
 	c_name,

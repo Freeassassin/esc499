@@ -43,11 +43,13 @@ define _LIMIT=100;
       ,i_category 
       ,i_class 
       ,i_current_price
-      ,sum(ws_ext_sales_price) as itemrevenue 
-      ,sum(ws_ext_sales_price)*100/sum(sum(ws_ext_sales_price)) over
+      ,sum(COALESCE(ws_ext_sales_price, 0)) as itemrevenue 
+      ,sum(COALESCE(ws_ext_sales_price, 0))*100/sum(sum(ws_ext_sales_price)) over
           (partition by i_class) as revenueratio
+ ,count(distinct i_item_id) as cnt_distinct_i_item_id
 from	
 	web_sales
+     left outer join web_page on ws_web_page_sk = wp_web_page_sk
     	,item 
     	,date_dim
 where 
@@ -56,7 +58,8 @@ where
   	and ws_sold_date_sk = d_date_sk
 	and d_date between cast('[SDATE]' as date) 
 				and (cast('[SDATE]' as date) + 30 days)
-group by 
+and i_category is not null
+ group by 
 	i_item_id
         ,i_item_desc 
         ,i_category

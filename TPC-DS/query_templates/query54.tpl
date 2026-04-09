@@ -66,9 +66,10 @@
  )
  , my_revenue as (
  select c_customer_sk,
-        sum(ss_ext_sales_price) as revenue
+        sum(COALESCE(ss_ext_sales_price, 0)) as revenue
  from   my_customers,
-        store_sales,
+        store_sales
+     left outer join promotion on ss_promo_sk = p_promo_sk,
         customer_address,
         store,
         date_dim

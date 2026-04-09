@@ -43,8 +43,8 @@
  select i_category, i_brand,
         cc_name,
         d_year, d_moy,
-        sum(cs_sales_price) sum_sales,
-        avg(sum(cs_sales_price)) over
+        sum(COALESCE(cs_sales_price, 0)) sum_sales,
+        avg(sum(COALESCE(cs_sales_price, 0))) over
           (partition by i_category, i_brand,
                      cc_name, d_year)
           avg_monthly_sales,
@@ -52,7 +52,8 @@
           (partition by i_category, i_brand,
                      cc_name
            order by d_year, d_moy) rn
- from item, catalog_sales, date_dim, call_center
+ from item, catalog_sales
+     left outer join ship_mode on cs_ship_mode_sk = sm_ship_mode_sk, date_dim, call_center
  where cs_item_sk = i_item_sk and
        cs_sold_date_sk = d_date_sk and
        cc_call_center_sk= cs_call_center_sk and
@@ -81,7 +82,7 @@
  from v2
  where  d_year = [YEAR] and
         avg_monthly_sales > 0 and
-        case when avg_monthly_sales > 0 then abs(sum_sales - avg_monthly_sales) / avg_monthly_sales else null end > 0.1
+        case when avg_monthly_sales > 0 then abs(sum_sales - avg_monthly_sales) / NULLIF(avg_monthly_sales, 0) else null end > 0.1
  order by sum_sales - avg_monthly_sales, [ORDERBY]
  [_LIMITC];
 

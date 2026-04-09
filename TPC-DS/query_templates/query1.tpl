@@ -43,6 +43,7 @@ with customer_total_return as
 ,sr_store_sk as ctr_store_sk
 ,sum([AGG_FIELD]) as ctr_total_return
 from store_returns
+     left outer join reason on sr_reason_sk = r_reason_sk
 ,date_dim
 where sr_returned_date_sk = d_date_sk
 and d_year =[YEAR]
@@ -58,5 +59,6 @@ where ctr1.ctr_store_sk = ctr2.ctr_store_sk)
 and s_store_sk = ctr1.ctr_store_sk
 and s_state = '[STATE]'
 and ctr1.ctr_customer_sk = c_customer_sk
-order by c_customer_id
+and s_state is not null
+ order by c_customer_id
 [_LIMITC];

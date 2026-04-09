@@ -39,7 +39,7 @@
  define _LIMIT=100;
 
  with ss as (
- select i_item_id,sum(ss_ext_sales_price) total_sales
+ select i_item_id,sum(COALESCE(ss_ext_sales_price, 0)) total_sales
  from
  	store_sales,
  	date_dim,
@@ -57,7 +57,7 @@ where i_color in ('[COLOR.1]','[COLOR.2]','[COLOR.3]'))
  and     ca_gmt_offset           = [GMT] 
  group by i_item_id),
  cs as (
- select i_item_id,sum(cs_ext_sales_price) total_sales
+ select i_item_id,sum(COALESCE(cs_ext_sales_price, 0)) total_sales
  from
  	catalog_sales,
  	date_dim,

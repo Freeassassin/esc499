@@ -36,16 +36,17 @@
  define _LIMIT=100;
  
  [_LIMITA] select [_LIMITB] 
-    sum(ss_net_profit) as total_sum
+    sum(COALESCE(ss_net_profit, 0)) as total_sum
    ,s_state
    ,s_county
    ,grouping(s_state)+grouping(s_county) as lochierarchy
    ,rank() over (
  	partition by grouping(s_state)+grouping(s_county),
  	case when grouping(s_county) = 0 then s_state end 
- 	order by sum(ss_net_profit) desc) as rank_within_parent
+ 	order by sum(COALESCE(ss_net_profit, 0)) desc) as rank_within_parent
  from
     store_sales
+     left outer join promotion on ss_promo_sk = p_promo_sk
    ,date_dim       d1
    ,store
  where

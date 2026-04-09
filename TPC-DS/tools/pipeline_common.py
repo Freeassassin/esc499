@@ -123,9 +123,11 @@ def normalize_sql(engine: str, sql_text: str) -> str:
             normalized,
             flags=re.IGNORECASE,
         )
-        normalized = normalized.replace(
-            "        from catalog_sales)),\n wswscs as",
-            "        from catalog_sales) wscs_src),\n wswscs as",
+        # Handle both original and augmented (LEFT OUTER JOIN) versions of wscs subquery
+        normalized = re.sub(
+            r"(from catalog_sales\b[^)]*?)\)\),(\n wswscs as)",
+            r"\1) wscs_src),\2",
+            normalized,
         )
         normalized = normalized.replace(
             "group by c_customer_sk)),",

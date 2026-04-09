@@ -42,10 +42,11 @@ select
         cc_call_center_id Call_Center,
         cc_name Call_Center_Name,
         cc_manager Manager,
-        sum(cr_net_loss) Returns_Loss
+        sum(COALESCE(cr_net_loss, 0)) Returns_Loss
 from
         call_center,
-        catalog_returns,
+        catalog_returns
+     left outer join reason on cr_reason_sk = r_reason_sk,
         date_dim,
         customer,
         customer_address,
@@ -64,5 +65,6 @@ and     ( (cd_marital_status       = 'M' and cd_education_status     = 'Unknown'
         or(cd_marital_status       = 'W' and cd_education_status     = 'Advanced Degree'))
 and     hd_buy_potential like '[BUY_POTENTIAL]%'
 and     ca_gmt_offset           = [GMT]
-group by cc_call_center_id,cc_name,cc_manager,cd_marital_status,cd_education_status
-order by sum(cr_net_loss) desc;
+and cd_education_status is not null
+ group by cc_call_center_id,cc_name,cc_manager,cd_marital_status,cd_education_status
+order by sum(COALESCE(cr_net_loss, 0)) desc;

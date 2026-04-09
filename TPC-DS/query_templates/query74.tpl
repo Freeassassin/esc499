@@ -47,6 +47,7 @@
        ,'s' sale_type
  from customer
      ,store_sales
+     left outer join promotion on ss_promo_sk = p_promo_sk
      ,date_dim
  where c_customer_sk = ss_customer_sk
    and ss_sold_date_sk = d_date_sk
@@ -92,8 +93,8 @@
          and t_w_secyear.year = [YEAR]+1
          and t_s_firstyear.year_total > 0
          and t_w_firstyear.year_total > 0
-         and case when t_w_firstyear.year_total > 0 then t_w_secyear.year_total / t_w_firstyear.year_total else null end
-           > case when t_s_firstyear.year_total > 0 then t_s_secyear.year_total / t_s_firstyear.year_total else null end
+         and case when t_w_firstyear.year_total > 0 then t_w_secyear.year_total / NULLIF(t_w_firstyear.year_total, 0) else null end
+           > case when t_s_firstyear.year_total > 0 then t_s_secyear.year_total / NULLIF(t_s_firstyear.year_total, 0) else null end
  order by [ORDERC.1],[ORDERC.2],[ORDERC.3]
 [_LIMITC];
 

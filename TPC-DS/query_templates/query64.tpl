@@ -39,13 +39,13 @@ define YEAR = random(1999, 2001, uniform);
 
 with cs_ui as
  (select cs_item_sk
-        ,sum(cs_ext_list_price) as sale,sum(cr_refunded_cash+cr_reversed_charge+cr_store_credit) as refund
+        ,sum(COALESCE(cs_ext_list_price, 0)) as sale,sum(cr_refunded_cash+cr_reversed_charge+cr_store_credit) as refund
   from catalog_sales
       ,catalog_returns
   where cs_item_sk = cr_item_sk
     and cs_order_number = cr_order_number
   group by cs_item_sk
-  having sum(cs_ext_list_price)>2*sum(cr_refunded_cash+cr_reversed_charge+cr_store_credit)),
+  having sum(COALESCE(cs_ext_list_price, 0))>2*sum(cr_refunded_cash+cr_reversed_charge+cr_store_credit)),
 cross_sales as
  (select i_product_name product_name
      ,i_item_sk item_sk
@@ -63,7 +63,7 @@ cross_sales as
      ,d2.d_year as fsyear
      ,d3.d_year s2year
      ,count(*) cnt
-     ,sum(ss_wholesale_cost) s1
+     ,sum(CASE WHEN ss_wholesale_cost > 0 THEN CASE WHEN ss_wholesale_cost < 1000000 THEN ss_wholesale_cost ELSE 0 END ELSE COALESCE(ss_wholesale_cost, 0) END) s1
      ,sum(ss_list_price) s2
      ,sum(ss_coupon_amt) s3
   FROM   store_sales

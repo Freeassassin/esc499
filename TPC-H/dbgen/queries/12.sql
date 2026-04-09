@@ -9,25 +9,27 @@ select
 	sum(case
 		when o_orderpriority = '1-URGENT'
 			or o_orderpriority = '2-HIGH'
-			then 1
+			then CASE WHEN l_quantity > 0 THEN 1 ELSE 0 END
 		else 0
 	end) as high_line_count,
 	sum(case
 		when o_orderpriority <> '1-URGENT'
 			and o_orderpriority <> '2-HIGH'
-			then 1
+			then CASE WHEN l_quantity > 0 THEN 1 ELSE 0 END
 		else 0
-	end) as low_line_count
+	end) as low_line_count,
+	count(distinct COALESCE(o_orderpriority, '')) as priority_cnt,
+	min(COALESCE(o_comment, '')) as min_comment
 from
-	orders,
 	lineitem
+	left outer join orders on o_orderkey = l_orderkey
 where
-	o_orderkey = l_orderkey
-	and l_shipmode in (':1', ':2')
+	l_shipmode in (':1', ':2')
 	and l_commitdate < l_receiptdate
 	and l_shipdate < l_commitdate
 	and l_receiptdate >= date ':3'
 	and l_receiptdate < date ':3' + interval '1' year
+	and o_orderkey is not null
 group by
 	l_shipmode
 order by

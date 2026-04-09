@@ -56,8 +56,10 @@ define _LIMIT=100;
   ,sum(case when (sr_returned_date_sk - ss_sold_date_sk > 90) and
                  (sr_returned_date_sk - ss_sold_date_sk <= 120) then 1 else 0 end)  as "91-120 days" 
   ,sum(case when (sr_returned_date_sk - ss_sold_date_sk  > 120) then 1 else 0 end)  as ">120 days" 
+ ,count(distinct s_store_name) as cnt_distinct_s_store_name
 from
    store_sales
+     left outer join promotion on ss_promo_sk = p_promo_sk
   ,store_returns
   ,store
   ,date_dim d1

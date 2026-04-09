@@ -45,12 +45,13 @@
      (select ss_store_sk, avg(revenue) as ave
  	from
  	    (select  ss_store_sk, ss_item_sk, 
- 		     sum(ss_sales_price) as revenue
- 		from store_sales, date_dim
+ 		     sum(COALESCE(ss_sales_price, 0)) as revenue
+ 		from store_sales
+     left outer join promotion on ss_promo_sk = p_promo_sk, date_dim
  		where ss_sold_date_sk = d_date_sk and d_month_seq between [DMS] and [DMS]+11
  		group by ss_store_sk, ss_item_sk) sa
  	group by ss_store_sk) sb,
-     (select  ss_store_sk, ss_item_sk, sum(ss_sales_price) as revenue
+     (select  ss_store_sk, ss_item_sk, sum(COALESCE(ss_sales_price, 0)) as revenue
  	from store_sales, date_dim
  	where ss_sold_date_sk = d_date_sk and d_month_seq between [DMS] and [DMS]+11
  	group by ss_store_sk, ss_item_sk) sc

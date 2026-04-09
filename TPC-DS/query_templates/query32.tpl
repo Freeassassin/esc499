@@ -37,9 +37,10 @@ define YEAR  = random(1998,2002,uniform);
 define CSDATE = date([YEAR]+"-01-01",[YEAR]+"-04-01",sales);
 define _LIMIT=100;
 
-[_LIMITA] select [_LIMITB] sum(cs_ext_discount_amt)  as "excess discount amount" 
+[_LIMITA] select [_LIMITB] sum(COALESCE(cs_ext_discount_amt, 0))  as "excess discount amount" 
 from 
-   catalog_sales 
+   catalog_sales
+     left outer join ship_mode on cs_ship_mode_sk = sm_ship_mode_sk 
    ,item 
    ,date_dim
 where

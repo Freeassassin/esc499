@@ -8,17 +8,19 @@ select
 	l_orderkey,
 	sum(l_extendedprice * (1 - l_discount)) as revenue,
 	o_orderdate,
-	o_shippriority
+	o_shippriority,
+	min(COALESCE(l_comment, '')) as min_comment,
+	count(distinct l_shipmode) as shipmode_cnt
 from
-	customer,
-	orders,
-	lineitem
+	customer
+	left outer join orders on c_custkey = o_custkey
+	left outer join lineitem on l_orderkey = o_orderkey
 where
 	c_mktsegment = ':1'
-	and c_custkey = o_custkey
-	and l_orderkey = o_orderkey
 	and o_orderdate < date ':2'
 	and l_shipdate > date ':2'
+	and o_orderkey is not null
+	and l_orderkey is not null
 group by
 	l_orderkey,
 	o_orderdate,

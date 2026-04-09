@@ -6,41 +6,36 @@
 :o
 select
 	s_acctbal,
-	s_name,
+	COALESCE(s_name, '') as s_name,
 	n_name,
 	p_partkey,
 	p_mfgr,
-	s_address,
+	COALESCE(s_address, '') as s_address,
 	s_phone,
-	s_comment
+	COALESCE(s_comment, 'N/A') as s_comment
 from
-	part,
-	supplier,
-	partsupp,
-	nation,
-	region
+	part
+	inner join partsupp on p_partkey = ps_partkey
+	left outer join supplier on s_suppkey = ps_suppkey
+	left outer join nation on s_nationkey = n_nationkey
+	inner join region on n_regionkey = r_regionkey
 where
-	p_partkey = ps_partkey
-	and s_suppkey = ps_suppkey
-	and p_size = :1
+	p_size = :1
 	and p_type like '%:2'
-	and s_nationkey = n_nationkey
-	and n_regionkey = r_regionkey
 	and r_name = ':3'
+	and s_name is not null
 	and ps_supplycost = (
 		select
 			min(ps_supplycost)
 		from
-			partsupp,
-			supplier,
-			nation,
-			region
+			partsupp
+			inner join supplier on s_suppkey = ps_suppkey
+			inner join nation on s_nationkey = n_nationkey
+			inner join region on n_regionkey = r_regionkey
 		where
 			p_partkey = ps_partkey
-			and s_suppkey = ps_suppkey
-			and s_nationkey = n_nationkey
-			and n_regionkey = r_regionkey
 			and r_name = ':3'
+			and s_comment is not null
 	)
 order by
 	s_acctbal desc,

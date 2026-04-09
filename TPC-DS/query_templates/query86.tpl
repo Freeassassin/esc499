@@ -35,16 +35,17 @@
  define DMS = random(1176,1224,uniform);
  define _LIMIT=100; 
  [_LIMITA] select [_LIMITB]  
-    sum(ws_net_paid) as total_sum
+    sum(COALESCE(ws_net_paid, 0)) as total_sum
    ,i_category
    ,i_class
    ,grouping(i_category)+grouping(i_class) as lochierarchy
    ,rank() over (
  	partition by grouping(i_category)+grouping(i_class),
  	case when grouping(i_class) = 0 then i_category end 
- 	order by sum(ws_net_paid) desc) as rank_within_parent
+ 	order by sum(COALESCE(ws_net_paid, 0)) desc) as rank_within_parent
  from
     web_sales
+     left outer join web_page on ws_web_page_sk = wp_web_page_sk
    ,date_dim       d1
    ,item
  where

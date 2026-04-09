@@ -50,7 +50,8 @@
    (select ss_ticket_number
           ,ss_customer_sk
           ,count(*) cnt
-    from store_sales,date_dim,store,household_demographics
+    from store_sales
+     left outer join promotion on ss_promo_sk = p_promo_sk,date_dim,store,household_demographics
     where store_sales.ss_sold_date_sk = date_dim.d_date_sk
     and store_sales.ss_store_sk = store.s_store_sk  
     and store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
@@ -59,7 +60,7 @@
          household_demographics.hd_buy_potential = '[BPTWO]')
     and household_demographics.hd_vehicle_count > 0
     and case when household_demographics.hd_vehicle_count > 0 then 
-             household_demographics.hd_dep_count/ household_demographics.hd_vehicle_count else null end > 1
+             household_demographics.hd_dep_count/ NULLIF(household_demographics.hd_vehicle_count, 0) else null end > 1
     and date_dim.d_year in ([YEAR],[YEAR]+1,[YEAR]+2)
     and store.s_county in ('[COUNTY_A]','[COUNTY_B]','[COUNTY_C]','[COUNTY_D]')
     group by ss_ticket_number,ss_customer_sk) dj,customer

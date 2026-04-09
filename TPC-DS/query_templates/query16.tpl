@@ -46,10 +46,11 @@ define _LIMIT=100;
 
 [_LIMITA] select [_LIMITB] 
    count(distinct cs_order_number) as "order count"
-  ,sum(cs_ext_ship_cost) as "total shipping cost"
-  ,sum(cs_net_profit) as "total net profit"
+  ,sum(COALESCE(cs_ext_ship_cost, 0)) as "total shipping cost"
+  ,sum(COALESCE(cs_net_profit, 0)) as "total net profit"
 from
    catalog_sales cs1
+     left outer join ship_mode on cs_ship_mode_sk = sm_ship_mode_sk
   ,date_dim
   ,customer_address
   ,call_center
@@ -70,7 +71,8 @@ and exists (select *
 and not exists(select *
                from catalog_returns cr1
                where cs1.cs_order_number = cr1.cr_order_number)
-order by count(distinct cs_order_number)
+and ca_state is not null
+ order by count(distinct cs_order_number)
 [_LIMITC];
 
 

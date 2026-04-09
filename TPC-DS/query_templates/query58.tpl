@@ -38,7 +38,7 @@
  
  with ss_items as
  (select i_item_id item_id
-        ,sum(ss_ext_sales_price) ss_item_rev 
+        ,sum(COALESCE(ss_ext_sales_price, 0)) ss_item_rev 
  from store_sales
      ,item
      ,date_dim
@@ -52,7 +52,7 @@
  group by i_item_id),
  cs_items as
  (select i_item_id item_id
-        ,sum(cs_ext_sales_price) cs_item_rev
+        ,sum(COALESCE(cs_ext_sales_price, 0)) cs_item_rev
   from catalog_sales
       ,item
       ,date_dim

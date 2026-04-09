@@ -38,8 +38,10 @@
  define _LIMIT=100;
  
 [_LIMITA]  select [_LIMITB] i_brand_id brand_id, i_brand brand,
- 	sum(ss_ext_sales_price) ext_price
- from date_dim, store_sales, item
+ 	sum(COALESCE(ss_ext_sales_price, 0)) ext_price
+ ,count(distinct i_brand) as cnt_distinct_i_brand
+ from date_dim, store_sales
+     left outer join promotion on ss_promo_sk = p_promo_sk, item
  where d_date_sk = ss_sold_date_sk
  	and ss_item_sk = i_item_sk
  	and i_manager_id=[MANAGER]

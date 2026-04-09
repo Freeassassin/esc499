@@ -43,6 +43,7 @@
  		then cs_sales_price - coalesce(cr_refunded_cash,0) else 0 end) as sales_before
   ,sum(case when (cast(d_date as date) >= cast ('[SALES_DATE]' as date)) 
  		then cs_sales_price - coalesce(cr_refunded_cash,0) else 0 end) as sales_after
+ ,count(distinct i_item_id) as cnt_distinct_i_item_id
  from
    catalog_sales left outer join catalog_returns on
        (cs_order_number = cr_order_number 

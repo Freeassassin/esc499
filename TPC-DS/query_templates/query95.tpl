@@ -45,8 +45,8 @@ with ws_wh as
    and ws1.ws_warehouse_sk <> ws2.ws_warehouse_sk)
 [_LIMITA] select [_LIMITB] 
    count(distinct ws_order_number) as "order count"
-  ,sum(ws_ext_ship_cost) as "total shipping cost"
-  ,sum(ws_net_profit) as "total net profit"
+  ,sum(COALESCE(ws_ext_ship_cost, 0)) as "total shipping cost"
+  ,sum(COALESCE(ws_net_profit, 0)) as "total net profit"
 from
    web_sales ws1
   ,date_dim

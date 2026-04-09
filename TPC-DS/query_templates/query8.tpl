@@ -38,8 +38,10 @@
  define _LIMIT=100;
 
  [_LIMITA] select [_LIMITB] s_store_name
-      ,sum(ss_net_profit)
+      ,sum(COALESCE(ss_net_profit, 0))
+ ,count(distinct s_store_name) as cnt_distinct_s_store_name
  from store_sales
+     left outer join promotion on ss_promo_sk = p_promo_sk
      ,date_dim
      ,store,
      (select ca_zip
@@ -139,6 +141,7 @@
   and ss_sold_date_sk = d_date_sk
   and d_qoy = [QOY] and d_year = [YEAR]
   and (substr(s_zip,1,2) = substr(V1.ca_zip,1,2))
+ and ca_zip is not null
  group by s_store_name
  order by s_store_name
  [_LIMITC];

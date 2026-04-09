@@ -43,7 +43,9 @@
         avg(cs_list_price) agg2,
         avg(cs_coupon_amt) agg3,
         avg(cs_sales_price) agg4 
- from catalog_sales, customer_demographics, date_dim, item, promotion
+ ,count(distinct i_item_id) as cnt_distinct_i_item_id
+ from catalog_sales
+     left outer join ship_mode on cs_ship_mode_sk = sm_ship_mode_sk, customer_demographics, date_dim, item, promotion
  where cs_sold_date_sk = d_date_sk and
        cs_item_sk = i_item_sk and
        cs_bill_cdemo_sk = cd_demo_sk and
@@ -53,6 +55,7 @@
        cd_education_status = '[ES]' and
        (p_channel_email = 'N' or p_channel_event = 'N') and
        d_year = [YEAR] 
+ and cd_gender is not null
  group by i_item_id
  order by i_item_id
  [_LIMITC];

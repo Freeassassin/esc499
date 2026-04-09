@@ -44,8 +44,10 @@
  ,[AGG](ss_net_profit) as store_sales_profit
  ,[AGG](sr_net_loss) as store_returns_loss
  ,[AGG](cs_net_profit) as catalog_sales_profit
+ ,count(distinct i_item_id) as cnt_distinct_i_item_id
  from
  store_sales
+     left outer join promotion on ss_promo_sk = p_promo_sk
  ,store_returns
  ,catalog_sales
  ,date_dim d1

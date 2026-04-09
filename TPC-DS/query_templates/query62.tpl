@@ -48,8 +48,10 @@ define _LIMIT=100;
   ,sum(case when (ws_ship_date_sk - ws_sold_date_sk > 90) and
                  (ws_ship_date_sk - ws_sold_date_sk <= 120) then 1 else 0 end)  as "91-120 days" 
   ,sum(case when (ws_ship_date_sk - ws_sold_date_sk  > 120) then 1 else 0 end)  as ">120 days" 
+ ,count(distinct w_warehouse_name) as cnt_distinct_w_warehouse_name
 from
    web_sales
+     left outer join web_page on ws_web_page_sk = wp_web_page_sk
   ,warehouse
   ,ship_mode
   ,web_site

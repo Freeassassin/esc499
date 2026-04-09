@@ -39,9 +39,11 @@
 [_LIMITA]  select [_LIMITB] dt.d_year
  	,item.i_category_id
  	,item.i_category
- 	,sum(ss_ext_sales_price)
+ 	,sum(COALESCE(ss_ext_sales_price, 0))
+ ,count(distinct i_category) as cnt_distinct_i_category
  from 	date_dim dt
  	,store_sales
+     left outer join promotion on ss_promo_sk = p_promo_sk
  	,item
  where dt.d_date_sk = store_sales.ss_sold_date_sk
  	and store_sales.ss_item_sk = item.i_item_sk
@@ -51,7 +53,7 @@
  group by 	dt.d_year
  		,item.i_category_id
  		,item.i_category
- order by       sum(ss_ext_sales_price) desc,dt.d_year
+ order by       sum(COALESCE(ss_ext_sales_price, 0)) desc,dt.d_year
  		,item.i_category_id
  		,item.i_category
 [_LIMITC] ;

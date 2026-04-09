@@ -50,7 +50,8 @@
         avg( cast(cs_net_profit as decimal(12,2))) agg5,
         avg( cast(c_birth_year as decimal(12,2))) agg6,
         avg( cast(cd1.cd_dep_count as decimal(12,2))) agg7
- from catalog_sales, customer_demographics cd1, 
+ from catalog_sales
+     left outer join ship_mode on cs_ship_mode_sk = sm_ship_mode_sk, customer_demographics cd1, 
       customer_demographics cd2, customer, customer_address, date_dim, item
  where cs_sold_date_sk = d_date_sk and
        cs_item_sk = i_item_sk and

@@ -6,28 +6,27 @@
 :o
 select
 	ps_partkey,
-	sum(ps_supplycost * ps_availqty) as value
+	sum(COALESCE(ps_supplycost, 0) * COALESCE(ps_availqty, 0)) as value
 from
-	partsupp,
-	supplier,
-	nation
+	partsupp
+	left outer join supplier on ps_suppkey = s_suppkey
+	inner join nation on s_nationkey = n_nationkey
 where
-	ps_suppkey = s_suppkey
-	and s_nationkey = n_nationkey
-	and n_name = ':1'
+	n_name = ':1'
+	and s_name is not null
+	and ps_comment is not null
 group by
 	ps_partkey having
-		sum(ps_supplycost * ps_availqty) > (
+		sum(COALESCE(ps_supplycost, 0) * COALESCE(ps_availqty, 0)) > (
 			select
-				sum(ps_supplycost * ps_availqty) * :2
+				COALESCE(sum(ps_supplycost * ps_availqty) * :2, 0)
 			from
-				partsupp,
-				supplier,
-				nation
+				partsupp
+				inner join supplier on ps_suppkey = s_suppkey
+				inner join nation on s_nationkey = n_nationkey
 			where
-				ps_suppkey = s_suppkey
-				and s_nationkey = n_nationkey
-				and n_name = ':1'
+				n_name = ':1'
+				and ps_comment is not null
 		)
 order by
 	value desc;

@@ -38,8 +38,8 @@
  
  with ss as
  (select s_store_sk,
-         sum(ss_ext_sales_price) as sales,
-         sum(ss_net_profit) as profit
+         sum(COALESCE(ss_ext_sales_price, 0)) as sales,
+         sum(COALESCE(ss_net_profit, 0)) as profit
  from store_sales,
       date_dim,
       store

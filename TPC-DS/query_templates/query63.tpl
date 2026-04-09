@@ -37,10 +37,11 @@ define _LIMIT=100;
 
 [_LIMITA] select [_LIMITB] * 
 from (select i_manager_id
-             ,sum(ss_sales_price) sum_sales
-             ,avg(sum(ss_sales_price)) over (partition by i_manager_id) avg_monthly_sales
+             ,sum(COALESCE(ss_sales_price, 0)) sum_sales
+             ,avg(sum(COALESCE(ss_sales_price, 0))) over (partition by i_manager_id) avg_monthly_sales
       from item
           ,store_sales
+     left outer join promotion on ss_promo_sk = p_promo_sk
           ,date_dim
           ,store
       where ss_item_sk = i_item_sk
@@ -56,7 +57,7 @@ from (select i_manager_id
               and i_brand in ('amalgimporto #1','edu packscholar #1','exportiimporto #1',
 		                 'importoamalg #1')))
 group by i_manager_id, d_moy) tmp1
-where case when avg_monthly_sales > 0 then abs (sum_sales - avg_monthly_sales) / avg_monthly_sales else null end > 0.1
+where case when avg_monthly_sales > 0 then abs (sum_sales - avg_monthly_sales) / NULLIF(avg_monthly_sales, 0) else null end > 0.1
 order by i_manager_id
         ,avg_monthly_sales
         ,sum_sales

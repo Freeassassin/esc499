@@ -57,7 +57,7 @@
                     and (cast ('[SALES_DATE]' as date) + 30 days)
    group by w_warehouse_name, i_item_id) x
  where (case when inv_before > 0 
-             then inv_after / inv_before 
+             then inv_after / NULLIF(inv_before, 0) 
              else null
              end) between 2.0/3.0 and 3.0/2.0
  order by w_warehouse_name

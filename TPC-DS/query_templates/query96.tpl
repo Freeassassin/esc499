@@ -39,6 +39,7 @@ define _LIMIT=100;
 
 [_LIMITA] select [_LIMITB] count(*) 
 from store_sales
+     left outer join promotion on ss_promo_sk = p_promo_sk
     ,household_demographics 
     ,time_dim, store
 where ss_sold_time_sk = time_dim.t_time_sk   
@@ -48,5 +49,6 @@ where ss_sold_time_sk = time_dim.t_time_sk
     and time_dim.t_minute >= 30
     and household_demographics.hd_dep_count = [DEPCNT]
     and store.s_store_name = 'ese'
-order by count(*)
+and s_store_name is not null
+ order by count(*)
 [_LIMITC];

@@ -40,8 +40,9 @@
  select avg(ss_quantity)
        ,avg(ss_ext_sales_price)
        ,avg(ss_ext_wholesale_cost)
-       ,sum(ss_ext_wholesale_cost)
+       ,sum(COALESCE(ss_ext_wholesale_cost, 0))
  from store_sales
+     left outer join promotion on ss_promo_sk = p_promo_sk
      ,store
      ,customer_demographics
      ,household_demographics

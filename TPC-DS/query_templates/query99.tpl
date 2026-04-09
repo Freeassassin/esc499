@@ -47,8 +47,10 @@ define _LIMIT=100;
   ,sum(case when (cs_ship_date_sk - cs_sold_date_sk > 90) and
                  (cs_ship_date_sk - cs_sold_date_sk <= 120) then 1 else 0 end)  as "91-120 days" 
   ,sum(case when (cs_ship_date_sk - cs_sold_date_sk  > 120) then 1 else 0 end)  as ">120 days" 
+ ,count(distinct w_warehouse_name) as cnt_distinct_w_warehouse_name
 from
    catalog_sales
+     left outer join promotion on cs_promo_sk = p_promo_sk
   ,warehouse
   ,ship_mode
   ,call_center
