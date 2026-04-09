@@ -1,0 +1,676 @@
+% Interim Report Template
+% Requirements: 12pt Times New Roman, 1.5x spacing, left justified, IEEE citations
+
+\documentclass[12pt]{report}
+
+% ============================================
+% PACKAGES
+% ============================================
+
+% Font: Times New Roman equivalent
+\usepackage{mathptmx}  % Times New Roman clone
+\usepackage[T1]{fontenc}
+
+% Page layout
+\usepackage[left=1in, right=1in, top=1in, bottom=1in]{geometry}
+
+% 1.5x line spacing
+\usepackage{setspace}
+\onehalfspacing
+
+% Left justification (ragged right)
+\usepackage[document]{ragged2e}
+
+% IEEE citations (using natbib + IEEEtran)
+\usepackage[numbers]{natbib}
+\bibliographystyle{IEEEtran}
+
+% Table of Contents, List of Figures/Tables
+\usepackage[titles]{tocloft}
+% Graphics and tables
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+
+% Hyperlinks (load last for compatibility)
+\usepackage[hidelinks]{hyperref}
+
+% For Gantt charts
+\usepackage{pgfgantt}
+
+% Better section formatting
+\usepackage{titlesec}
+
+% Make chapters not start on a new page
+\titleclass{\chapter}{straight}
+
+% Consistent header formatting (all bold, proportional sizes)
+\titleformat{\chapter}[block]
+  {\normalfont\bfseries\Large}{\thechapter}{1em}{}
+\titlespacing*{\chapter}{0pt}{20pt}{20pt}
+
+\titleformat{\section}
+  {\normalfont\bfseries\large}
+  {\thesection}{1em}{}
+
+\titleformat{\subsection}
+  {\normalfont\bfseries\normalsize}
+  {\thesubsection}{1em}{}
+
+\titleformat{\subsubsection}
+  {\normalfont\bfseries\normalsize}
+  {\thesubsubsection}{1em}{}
+
+% ============================================
+% PAGE NUMBERING CONFIGURATION
+% ============================================
+
+% Command to switch to roman numerals (prefatory material)
+\newcommand{\frontmatter}{%
+    \pagenumbering{roman}
+    \setcounter{page}{1}
+}
+
+% Command to switch to arabic numerals (body)
+\newcommand{\mainmatter}{%
+    \pagenumbering{arabic}
+    \setcounter{page}{1}
+}
+
+% ============================================
+% DOCUMENT BEGINS
+% ============================================
+
+\begin{document}
+
+% ============================================
+% TITLE PAGE
+% ============================================
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+    
+    {\LARGE\bfseries Cloud Native Analytical Database Benchmarking \par}
+    
+    \vspace{2cm}
+    
+    {\Large Interim Report \\
+    January 2026 \par}
+    
+    \vspace{3cm}
+    
+    {\large
+    Farbod Mohammadzadeh (1008360462) \\[0.5em]
+    \textbf{Supervisor:} Professor Arno Jacobsen \par
+    }
+    
+    \vspace{3cm}
+
+    
+\end{titlepage}
+
+% ============================================
+% PREFATORY MATERIAL (Roman Numerals)
+% ============================================
+\frontmatter
+
+% Table of Contents
+\tableofcontents
+\newpage
+
+% List of Figures
+\listoffigures
+\newpage
+
+% List of Tables
+\listoftables
+\newpage
+
+% ============================================
+% MAIN BODY (Arabic Numerals)
+% ============================================
+\mainmatter
+
+% ============================================
+% CHAPTER 1: INTRODUCTION
+% ============================================
+\chapter{Introduction}
+\label{ch:introduction}
+
+\section{Context and Motivation}
+\label{sec:context}
+
+For decades, TPC-H and TPC-DS have been the go-to benchmarks for evaluating analytical databases. But these benchmarks were designed before cloud computing existed, and they show their age when applied to modern platforms like Snowflake and Amazon Redshift \cite{redset, cab, pbench}.
+
+Recently, both companies released traces of their production workloads---Snowset \cite{snowset} and Redset \cite{redset}. These datasets reveal just how different real customer queries are from TPC workloads: the query complexity, operator usage, and access patterns look nothing alike \cite{pbench, snowset}. The problem is that these traces alone don't make a usable benchmark---they're missing the actual queries and data needed to reproduce the workloads.
+
+This matters because the next generation of database features---learned optimizers, automatic materialized views, elastic scaling---all need realistic workloads to develop and test against \cite{redset, redbench}. Right now, researchers are stuck using benchmarks that don't reflect how databases are actually used.
+
+\section{Problem Statement}
+\label{sec:problem}
+
+Recent work has tried to close this gap. Stitcher \cite{stitcher} learns to match hardware performance profiles from historical data, while CAB \cite{cab} tries to capture high-level workload patterns. However, neither approach addresses both dimensions simultaneously \cite{pbench}. Existing methods allow matching either the CPU and memory footprint or the query structure, but typically not both concurrently on an arbitrary deployment.
+
+This thesis aims to build a benchmark that captures both dimensions simultaneously.
+
+\section{Objectives}
+\label{sec:objectives}
+
+The goals of this thesis are:
+
+\begin{enumerate}
+    \item Build a workload synthesis pipeline that generates queries and data matching both the operator statistics from production traces and the hardware performance profile of a target system.
+    
+    \item Run these synthetic workloads across different hardware and software configurations to create a reusable benchmark dataset.
+    
+    \item Validate that the generated workloads actually reflect real-world behavior.
+\end{enumerate}
+
+\section{Scope and Contributions}
+\label{sec:scope}
+
+The main contribution is a learned synthesis approach that combines queries from existing benchmarks using multi-objective optimization \cite{pbench}. A learned model predicts how query mixes will perform on specific hardware \cite{stitcher}, and simulated annealing assigns realistic arrival times \cite{pbench}.
+
+This work covers analyzing Snowset and Redset, building the synthesis pipeline, running workloads across configurations, and validating the results. The end product is a benchmark generator that produces tests reflecting actual customer usage \cite{redset}.
+
+\section{Report Organization}
+\label{sec:organization}
+
+The purpose of this interim report is to document the methodological progress, preliminary findings, and remaining roadmap for the development of a unified analytical database benchmark. Chapter~\ref{ch:literature} reviews existing benchmarks, production trace analyses, and workload synthesis techniques. Chapter~\ref{ch:progress} covers the methodology and preliminary results. Chapter~\ref{ch:future} outlines the remaining work and timeline.
+
+% ============================================
+% CHAPTER 2: LITERATURE REVIEW / BACKGROUND
+% ============================================
+\chapter{Literature Review}
+\label{ch:literature}
+
+This chapter surveys the research landscape around analytical database benchmarking, tracing the evolution from traditional static benchmarks to modern synthesis techniques. The goal is to establish where current methods fall short and how this thesis fits into the broader research effort.
+
+\section{Why Traditional Benchmarks Fall Short}
+\label{sec:traditional-benchmarks}
+
+Studies of production workloads at Amazon Redshift and Snowflake have made one thing clear: TPC-H and TPC-DS don't look much like real customer queries \cite{redset, snowset}.
+
+The differences show up in several ways. First, production workloads aren't read-only. In Redshift, CTAS statements alone account for 16.4\% of the total load, and metadata queries make up 31\% of Snowflake's traffic---something TPC benchmarks barely touch \cite{redset, snowset}. Second, real queries are structurally more complex: longer SQL, deeper nesting, heavy use of CTEs. Join patterns differ too---37\% of Snowflake joins are outer joins compared to TPC-DS's inner-join bias, and nearly half use text-based keys instead of numeric ones \cite{snowset}. Third, production data is skewed, which throws off cardinality estimation and distributed join planning in ways that uniform TPC data never reveals \cite{redset}.
+
+Perhaps most importantly, cloud workloads are dynamic. They exhibit significant intra-day load swings that require elastic scaling \cite{cab, redset}. And query repetition is far more common than benchmarks assume---in some Redshift clusters, 80\% of queries are exact repeats \cite{redset}. This creates caching opportunities that TPC workloads never motivate.
+
+\section{Capturing High-Level Workload Patterns}
+\label{sec:high-level-patterns}
+
+One line of research has focused on recreating the macroscopic behavior of cloud workloads---the arrival patterns, multi-tenancy, and elasticity that TPC ignores.
+
+The Cloud Analytics Benchmark (CAB) \cite{cab} was among the first to tackle this. Built on TPC-H, CAB adds cloud-native concepts like intermittent query arrivals and focuses on user-centric metrics such as monetary cost alongside latency. MTD-DS \cite{mtdds} takes a similar approach for TPC-DS, adding SLA awareness and configurable pricing models to evaluate how well systems balance performance against cost in multi-tenant settings.
+
+Other work has introduced elasticity testing. Research on the TPCx-BB benchmark \cite{elasticcloud} used Hidden Markov Models to generate synthetic job arrival sequences that mimic the busy and quiet periods seen in real clusters. This tests whether a system's scheduler can handle dynamic load shifts.
+
+These approaches make benchmarks more realistic by capturing workload dynamics. But they still rely on existing query templates and don't explicitly model how queries interact with hardware resources.
+
+\section{Matching Hardware Performance Profiles}
+\label{sec:hardware-profiles}
+
+A complementary line of research focuses on the physical side: replicating the resource consumption patterns of a workload regardless of its logical structure.
+
+Stitcher \cite{stitcher} pioneered this idea of ``learned workload synthesis.'' The goal is to generate a synthetic workload that matches the hardware performance profile---CPU counters, memory usage, I/O---of a production workload on any target hardware. It does this by composing pieces from standard benchmarks, guided by a machine learning model that predicts performance.
+
+Why does this matter? Research on cost-optimal query processing \cite{costoptimal} shows that the ideal hardware configuration depends entirely on the workload's resource consumption profile. Whether a CPU-bound or network-bound instance is more cost-effective can flip completely with changes in hardware like faster networking.
+
+The limitation of this approach is that Stitcher focuses on matching the hardware footprint while ignoring the operator and query structure that produces it \cite{pbench, redbench}. This leaves a gap: you can match the physical behavior or the logical structure, but existing tools can't do both.
+
+\section{Towards Unified Synthesis}
+\label{sec:unified-synthesis}
+
+Recent work has started tackling this unified problem directly, and these systems form the foundation for this thesis.
+
+\subsection{Component-Based Synthesis}
+\label{subsec:component-synthesis}
+
+These methods build workloads by selecting and combining queries from existing benchmarks to match statistics extracted from real traces.
+
+PBench \cite{pbench} frames this as a multi-objective optimization problem: generate a workload that approximates both performance metrics (like CPU time) and operator distributions from traces like Snowset and Redset. It uses Integer Linear Programming for component selection, simulated annealing to preserve temporal dynamics, and LLM-based augmentation to expand the pool of available queries.
+
+Redbench \cite{redbench} takes a similar approach but focuses specifically on preserving key characteristics from Amazon's Redset trace---query repetition rates and the relative shape of join complexity over time. It samples queries from a support benchmark like TPC-DS in a way that ensures these patterns survive in the synthetic workload.
+
+\subsection{Generative Synthesis with LLMs}
+\label{subsec:llm-synthesis}
+
+A newer paradigm uses large language models to generate entirely novel queries that meet complex specifications.
+
+SQLBarber \cite{sqlbarber} tackles the unified problem with a dual architecture. An LLM pipeline with self-correction generates novel SQL templates that satisfy structural constraints---number of joins, presence of aggregations, and so on. A cost-aware generator then uses Bayesian optimization to tune predicates, ensuring the final workload matches a target cost distribution (e.g., execution time). This links query structure to hardware performance in a single system.
+
+SQLStorm \cite{sqlstorm} demonstrates what LLMs can do for benchmark diversity. By generating queries from real-world datasets like StackOverflow, it produces thousands of unique query plans with far greater coverage of SQL features than template-based methods. While not explicitly cost-aware, it captures the ``long tail'' of query complexity that production systems actually see.
+
+\section{Research Gap}
+\label{sec:gap}
+
+The literature shows a clear trajectory: from static benchmarks, to systems that capture workload dynamics, to systems that match hardware profiles, and now to unified approaches that try to do both. But the current state-of-the-art still has limitations.
+
+PBench and SQLBarber represent the frontier, but they haven't been systematically validated across diverse hardware and software configurations. The question of whether a synthetic workload truly behaves like its real-world counterpart under different deployments remains open.
+
+This thesis aims to address that gap. The goal is to build a synthesis pipeline that integrates these recent advances---combining the structural matching of component-based methods with the flexibility of LLM-based generation and the performance modeling needed to ensure hardware fidelity. Crucially, the validation will span multiple deployment configurations to produce a benchmark that generalizes beyond a single target system.
+
+% ============================================
+% CHAPTER 3: PROGRESS TO DATE
+% ============================================
+\chapter{Progress to Date}
+\label{ch:progress}
+
+This chapter documents the work completed thus far, covering the first two phases of the proposed methodology: constructing the query pool and query profiling. Methods are described and justified, and preliminary results from production trace analysis and benchmark execution are presented.
+
+\section{Methodology}
+\label{sec:methodology}
+
+The methodology follows a systematic approach to workload synthesis, beginning with comprehensive analysis of production traces to understand real-world query characteristics, followed by benchmark infrastructure setup and initial query profiling.
+
+\subsection{Production Trace Analysis Infrastructure}
+\label{subsec:trace-infrastructure}
+
+Analyzing production workloads at the scale of hundreds of millions of queries demands careful infrastructure choices. After evaluating several options, DuckDB emerged as the clear choice for this project. Unlike traditional database systems that require loading data into memory or managing a separate server process, DuckDB operates as an embedded analytical engine that queries columnar Parquet files directly on disk. This matters enormously when working with datasets like Snowset (69 million queries across 93 columns) or Redset Provisioned (433 million queries)---loading such data into memory would be impractical for the kind of iterative exploratory analysis this research requires.
+
+The infrastructure uses what might be called a views-based architecture. Production traces stay in their original Parquet format, and DuckDB views reference these files without duplication. This approach trades some query flexibility for dramatic memory savings, a worthwhile exchange during methodology development when the same data gets queried repeatedly in slightly different ways.
+
+To streamline the analysis workflow, a set of parameterized data access interfaces was developed to provide reusable query patterns with configurable sampling rates. Early exploration uses aggressive sampling (often 1\% or less) to iterate quickly, while final statistics run against the complete datasets.
+
+\subsection{Benchmark Infrastructure Setup}
+\label{subsec:benchmark-infrastructure}
+
+Two standard analytical benchmarks were deployed: TPC-H and TPC-DS. TPC-DS was prioritized for detailed implementation because its schema complexity (25 tables versus TPC-H's 8) and query diversity (99 query templates versus 22) better approximate the structural characteristics observed in production traces \cite{redset, snowset}.
+
+The TPC-DS implementation uses Scale Factor 1 for initial profiling, generating approximately 1 GB of data across 17 dimension tables and 7 fact tables. The largest tables---\texttt{inventory} (11.7 million rows), \texttt{store\_sales} (2.9 million rows), and \texttt{customer\_demographics} (1.9 million rows)---provide sufficient data for meaningful execution time measurements while allowing rapid iteration during methodology development.
+
+Data generation was performed using the official TPC-DS tools (DSGen version 4.0.0). Data files in pipe-delimited format were loaded into a persistent DuckDB database, with the schema matching the TPC-DS specification. This persistent storage enables execution time measurements without repeated data loading overhead.
+
+\subsection{Query Profiling Approach}
+\label{subsec:profiling-approach}
+
+Query profiling extracts both structural and performance characteristics from each query. Structural profiling parses the SQL text to identify clause presence (SELECT, FROM, WHERE, GROUP BY, HAVING, ORDER BY, LIMIT), join types and counts, predicate complexity, and subquery nesting depth. Performance profiling executes queries in isolation and records execution time, rows returned, and execution status.
+
+Isolation is critical for performance profiling because concurrent execution introduces confounding effects---queries compete for CPU, memory, and I/O bandwidth, making intrinsic query performance impossible to measure. By executing queries serially with no other workload, we obtain the baseline performance characteristics needed for the matching algorithm.
+
+\subsection{LLM Integration for Query Augmentation}
+\label{subsec:llm-integration}
+
+A preliminary pipeline for LLM-based query augmentation was established using OpenAI's GPT-4o-mini model. The rationale for LLM integration follows from the gap analysis: standard benchmarks lack query types common in production (metadata queries, session management, certain structural patterns), and manual query construction does not scale. LLMs can generate syntactically valid SQL that matches specified structural constraints while respecting schema definitions.
+
+The current implementation focuses on code annotation as a proof-of-concept, with temperature set to 0 for deterministic output. This foundation will be extended in Phase 3 to generate queries matching specific structural targets identified through gap analysis.
+
+\section{Implementation}
+\label{sec:implementation}
+
+\subsection{Dataset Acquisition and Integration}
+\label{subsec:dataset-acquisition}
+
+The analysis draws on three complementary production trace datasets. Snowset, released by Snowflake, captures 69,182,074 queries spanning a two-week period in early 2018. Its 93 columns provide unusually rich detail: not just execution times, but operator-level CPU breakdowns, memory consumption, and I/O statistics that reveal exactly where queries spend their time. Amazon's Redset comes in two flavors---a serverless deployment with 8.2 million queries and a provisioned deployment with over 433 million. Though less detailed than Snowset (24 columns versus 93), Redset offers something Snowset lacks: query type classification and cache hit information that illuminate read/write patterns and caching behavior.
+
+All three datasets live in Parquet format with partitioning optimized for time-series queries. A single DuckDB database (\texttt{snowset\_analysis.duckdb}) maintains views over these files, enabling unified analysis without the storage overhead of data duplication.
+
+\subsection{TPC-DS Schema and Data Loading}
+\label{subsec:tpcds-loading}
+
+The complete TPC-DS schema was implemented in DuckDB, comprising 17 dimension tables and 7 fact tables. The dimension tables cover the expected retail domain entities---customers and their addresses, items, stores, warehouses, promotions, and various classification hierarchies. The fact tables capture transactional data across three sales channels (store, catalog, and web), their corresponding returns, and inventory snapshots.
+
+The data loading process necessitated handling format discrepancies, specifically the non-standard NULL marker (\texttt{\textbackslash N}) generated by TPC-DS tools. Additionally, the loading scripts required error-tolerant logic to manage schema validation and recovery from partial failures. After resolving these issues, the loaded row counts matched TPC-DS specifications exactly, providing confidence in the data generation and loading pipeline.
+
+\subsection{Query Execution Framework}
+\label{subsec:execution-framework}
+
+The query execution framework orchestrates the profiling process. It reads SQL from TPC-DS query templates, executes each query against the loaded database, and records the results---execution time, rows returned, and whether the query succeeded or failed. Error handling was a practical necessity: some TPC-DS queries require minor syntax adjustments for DuckDB compatibility, and the framework needed to continue processing the remaining queries even when individual ones failed.
+
+Initial profiling ran on a development machine, which sufficed for validating the methodology. The next phase will extend this to virtual machines with varying CPU and memory configurations, establishing the performance scaling relationships needed for the matching algorithm.
+
+\section{Preliminary Results}
+\label{sec:results}
+
+\subsection{Production Workload Characteristics}
+\label{subsec:production-characteristics}
+
+Analysis of the production traces reveals substantial differences from TPC benchmark assumptions, validating the motivation for this thesis.
+
+\subsubsection{Query Duration Statistics}
+
+Table~\ref{tab:duration-stats} presents duration statistics across the three datasets. The wide variance between median and mean values---particularly in Snowset where the mean (10,591 ms) is 4.7$\times$ the median (2,244 ms)---indicates heavy-tailed distributions characteristic of production workloads but absent in synthetic benchmarks.
+
+\begin{table}[H]
+    \centering
+    \caption{Query duration statistics across production trace datasets.}
+    \label{tab:duration-stats}
+    \begin{tabular}{lrrrrr}
+        \toprule
+        Dataset & Queries & Mean (ms) & Median (ms) & P95 (ms) & P95/Median \\
+        \midrule
+        Snowset & 69.2M & 10,591 & 2,244 & 36,695 & 16.4$\times$ \\
+        Redset Serverless & 8.2M & 11,806 & 195 & 23,398 & 120$\times$ \\
+        Redset Provisioned & 433.1M & 2,780 & 46 & 4,691 & 102$\times$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+The extreme P95/median ratios in Redset (102--120$\times$) compared to Snowset (16.4$\times$) suggest different workload compositions, with Redset containing a larger proportion of very fast queries (possibly cached or metadata queries) alongside occasional expensive analytical queries.
+
+\subsubsection{Query Type Distribution}
+
+Unlike TPC benchmarks which contain exclusively SELECT statements, production workloads exhibit significant write activity. In Redset Serverless:
+
+\begin{table}[H]
+    \centering
+    \caption{Query type distribution in Redset Serverless.}
+    \label{tab:query-types}
+    \begin{tabular}{lrr}
+        \toprule
+        Query Type & Count & Percentage \\
+        \midrule
+        INSERT & 2,979,711 & 36.1\% \\
+        SELECT & 2,171,354 & 26.3\% \\
+        COPY & 1,052,484 & 12.8\% \\
+        DELETE & 739,113 & 9.0\% \\
+        OTHER & 620,860 & 7.5\% \\
+        ANALYZE & 339,553 & 4.1\% \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+INSERT statements alone account for 36.1\% of all queries---a workload component entirely absent from read-only benchmarks. This confirms findings in prior work \cite{redset} and motivates the need for write-inclusive benchmark generation.
+
+\subsubsection{CPU Time Breakdown by Operator}
+
+Snowset provides operator-level CPU profiling, enabling analysis of where execution time is spent. The breakdown reveals:
+
+\begin{table}[H]
+    \centering
+    \caption{Average CPU time breakdown by operator type in Snowset.}
+    \label{tab:cpu-breakdown}
+    \begin{tabular}{lrr}
+        \toprule
+        Operator & Time (ms) & Percentage \\
+        \midrule
+        Scan & 29,930 & 40.6\% \\
+        Filter & 9,398 & 12.7\% \\
+        Aggregate & 9,393 & 12.7\% \\
+        Join & 9,014 & 12.2\% \\
+        Idle & 11,277 & 15.3\% \\
+        Sort & 3,689 & 5.0\% \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Scan operations dominate CPU consumption at 40.6\%, indicating I/O-bound workloads. The 15.3\% idle time suggests resource contention or scheduling inefficiencies---dynamics that synthetic benchmarks should reproduce to be representative.
+
+\subsubsection{Concurrency Analysis}
+
+Production workloads exhibit dramatic concurrency swings that synthetic benchmarks rarely capture. In the Snowset trace, concurrent query counts range from as few as 13 to as many as 1,608, with a median around 694 and a 90th percentile of 862. This two-orders-of-magnitude variation happens within a single day's operation.
+
+More interesting than the raw numbers is how performance scales with concurrency. Log-log regression of latency versus concurrency yields a slope of approximately $-0.31$, suggesting sub-linear degradation---doubling the load doesn't double the latency. But this aggregate view masks a critical threshold. Beyond roughly 110 concurrent queries, the scaling behavior shifts: the slope exceeds 1.05, meaning performance degrades faster than load increases. This saturation point represents exactly the kind of operating regime that synthetic benchmarks should stress-test but typically ignore.
+
+\subsubsection{Cache Hit Rates}
+
+The Redset traces include cache hit information, and the numbers are surprisingly low: 4.59\% for serverless deployments and 10.63\% for provisioned clusters. These figures become puzzling when considered alongside query repetition rates---prior analysis of Redset found that up to 80\% of queries are exact repeats \cite{redset}. If most queries repeat, why don't caches help more?
+
+Several explanations are possible. The repeated queries might access different data partitions each time, or cache eviction might happen faster than query repetition. Whatever the cause, this gap between repetition and cache hits suggests that production workloads exercise caching behavior in ways that current benchmarks don't capture. Synthetic workloads should incorporate realistic repetition patterns to properly evaluate caching strategies.
+
+\subsubsection{Warehouse Size Performance Scaling}
+
+Snowset includes warehouse size metadata (compute capacity measured in virtual warehouse units). Performance analysis by warehouse size reveals non-linear scaling:
+
+\begin{table}[H]
+    \centering
+    \caption{Query performance by Snowflake warehouse size.}
+    \label{tab:warehouse-scaling}
+    \begin{tabular}{rrr}
+        \toprule
+        Warehouse Size & Query Count & Avg Duration (ms) \\
+        \midrule
+        1 & 26,052,951 & 6,885 \\
+        2 & 15,403,001 & 15,539 \\
+        4 & 7,593,261 & 14,548 \\
+        8 & 8,381,995 & 14,126 \\
+        16 & 10,236,843 & 5,685 \\
+        32 & 796,281 & 19,467 \\
+        64 & 706,331 & 12,968 \\
+        128 & 11,411 & 200,632 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+The non-monotonic relationship between warehouse size and average duration indicates that larger warehouses handle proportionally more complex queries, not that larger compute is slower. This self-selection effect must be controlled for when modeling performance scaling.
+
+\subsection{TPC-DS Baseline Metrics}
+\label{subsec:tpcds-metrics}
+
+The TPC-DS Scale Factor 1 deployment provides baseline query execution times against which production trace matching will be performed. Initial profiling of the 99 TPC-DS query templates shows execution times ranging from milliseconds for simple scans to several seconds for complex multi-way joins with multiple aggregations.
+
+The profiling results confirm what the literature suggests: TPC-DS queries behave quite differently from production workloads. Execution times cluster more tightly than in Snowset or Redset, an expected consequence of TPC-DS's uniform data distribution---there are no outlier queries that hit unexpectedly large partitions or trigger worst-case join behavior. Join-heavy queries (those touching four or more tables) dominate the high end of execution times, which aligns with the operator breakdown from Snowset showing joins as significant CPU consumers.
+
+The more pressing issue is coverage gaps. TPC-DS contains only SELECT queries, leaving INSERT, UPDATE, DELETE, and metadata operations entirely unrepresented. Since these account for over half of production query volume, the query pool requires substantial augmentation before it can approximate real workloads. This augmentation is a primary focus of Phase 3.
+
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Validation of Literature Claims}
+\label{subsec:validation}
+
+The preliminary analysis provides empirical support for claims that previously rested mainly on anecdote or smaller-scale studies. The inadequacy of TPC benchmarks, often asserted but rarely quantified, becomes concrete when 36\% of production queries are INSERT statements that TPC workloads ignore entirely \cite{redset, snowset}. Similarly, the claim that production query complexity follows heavy-tailed distributions gains teeth when the data shows P95/median ratios exceeding 100$\times$---a spread that TPC's relatively uniform query templates never approach.
+
+The temporal dynamics story also checks out. Concurrency swings by two orders of magnitude within normal operation, creating resource contention patterns that steady-state benchmarks cannot reproduce. And the caching puzzle---high repetition rates paired with low cache hit rates---confirms that production workloads interact with system caches in ways that synthetic benchmarks fail to exercise. Taken together, these findings strengthen the motivation for this thesis: the gap between benchmarks and reality is not academic but operationally significant.
+
+\subsection{Novel Observations}
+\label{subsec:novel}
+
+Beyond validating prior work, the analysis surfaced findings that, to my knowledge, haven't appeared in the literature. The concurrency saturation threshold at around 110 concurrent queries is one example---below this point, adding queries degrades performance sub-linearly; above it, the system enters a regime where each additional query hurts more than the last. This threshold provides a concrete target for stress-testing that current benchmarks don't systematically probe.
+
+Equally interesting is the variation in scaling behavior across different logical warehouses. In log-log space, scaling slopes range from $-0.78$ (strong sub-linear scaling, meaning more queries barely hurt performance) to $+0.56$ (super-linear degradation, where adding queries tanks throughput). This variance suggests that workload composition matters enormously---some query mixes scale gracefully while others do not, even on identical hardware.
+
+Finally, strong correlations emerged between dominant CPU operators and memory consumption. Queries dominated by scan operations show different memory profiles than join-heavy queries, and these patterns appear consistent enough to be predictive. This observation may enable resource requirement estimation from query structure alone, a capability useful for both workload synthesis and query scheduling.
+
+\subsection{Challenges Encountered}
+\label{subsec:challenges}
+
+The work was not without difficulties. Data scale proved the most persistent challenge: 500+ million records demand constant attention to memory management and query optimization. The views-based architecture helps enormously, but it forecloses certain analysis patterns---anything requiring multiple passes over the data becomes prohibitively slow, forcing creative workarounds or acceptance of sampled approximations.
+
+Schema heterogeneity created a different kind of problem. Production traces capture what queries did (operator counts, execution times, resource consumption) but not the queries themselves. Without the actual SQL text, direct structural analysis is impossible. The work relies instead on proxy metrics---operator distributions, join counts, scan volumes---that correlate with structural characteristics without revealing them directly. This limitation is inherent to the available data and shapes what kinds of validation are possible.
+
+Performance isolation remains an ongoing concern. Development-machine profiling suffers from background processes, thermal throttling, and other sources of noise. Clean measurements require dedicated execution environments, which motivated the planned expansion to cloud-based virtual machines where the execution environment can be controlled more precisely.
+
+% ============================================
+% CHAPTER 4: FUTURE WORK
+% ============================================
+\chapter{Future Work}
+\label{ch:future}
+
+This chapter outlines the remaining work for Phases 3 and 4 of the methodology: trace-driven query selection and scheduling, followed by workload execution and validation. Potential approaches are discussed, expected outcomes are defined, and alternative methods are identified should primary approaches prove insufficient.
+
+\section{Planned Activities}
+\label{sec:planned}
+
+The remaining work comprises three major activities: completing the query pool through LLM-based augmentation, implementing the trace-driven matching algorithm, and validating the generated workloads across diverse deployment configurations.
+
+\subsection{Query Pool Augmentation}
+\label{subsec:pool-augmentation}
+
+Gap analysis reveals substantial holes in TPC-DS's coverage of production query patterns. Most glaring is the complete absence of write operations---INSERT, UPDATE, DELETE, and COPY statements that together account for over half of Redset's query volume. Metadata queries present a similar gap: SHOW, DESCRIBE, and information schema queries comprise roughly 31\% of Snowflake traffic \cite{snowset} but appear nowhere in TPC-DS. Session management statements (SET, USE) are likewise missing.
+
+Even within SELECT queries, structural differences abound. Production workloads heavily use outer joins (37\% of all joins in Snowflake) while TPC-DS leans toward inner joins. Text-based join keys appear in nearly half of production joins but rarely in TPC-DS. Deeply nested subqueries and complex CTEs are common in the wild but underrepresented in benchmark templates.
+
+Filling these gaps requires different strategies for different query types. Metadata and session management queries are structurally simple---we can generate SHOW and SET statements systematically without much sophistication. Write operations require more care, since INSERT and UPDATE statements need realistic data distributions and referential integrity. For structural diversity in SELECT queries, LLM-based augmentation following SQLStorm \cite{sqlstorm} and SQLBarber \cite{sqlbarber} offers the most promising path: prompting the model with schema definitions and target structural characteristics to generate novel queries that extend the pool's coverage.
+
+\subsection{Multi-Environment Query Profiling}
+\label{subsec:multi-profiling}
+
+The matching algorithm needs to predict how queries will perform on target hardware, which requires understanding how performance scales across different configurations. To build this understanding, query profiling will expand beyond the development machine to a matrix of virtual machine configurations: CPU counts ranging from 2 to 16 vCPUs, memory from 4 to 32 GB, and TPC-DS scale factors from 1 to 100.
+
+This factorial design is intentionally aggressive. The goal is not just to measure performance at each point but to fit scaling models that interpolate (and cautiously extrapolate) to configurations not directly tested. Following Stitcher's approach \cite{stitcher}, these profiles should enable reasonable performance predictions for arbitrary target hardware---a capability essential for the matching algorithm to work across diverse deployment scenarios.
+
+\subsection{Trace-Driven Matching Algorithm}
+\label{subsec:matching-algorithm}
+
+The matching algorithm will process production trace events and assign queries from the pool. The algorithm operates in three stages:
+
+\textbf{Stage 1: Database Assignment and Filtering.} Each trace event specifies a logical database. We map trace databases to test databases based on workload characteristics (scale, complexity patterns). Queries are then filtered to those compatible with the assigned schema.
+
+\textbf{Stage 2: Performance Matching.} Given the trace event's CPU time and duration, we select candidate queries whose profiled performance approximates these targets. Performance predictions account for concurrency: if $N$ queries are concurrently executing when a new query begins, we scale the isolated execution time by a concurrency factor derived from the production concurrency analysis.
+
+\textbf{Stage 3: Structural Balance Maintenance.} After initial performance-matched assignments, we verify that aggregate structural statistics (join types, operator distributions, query complexity) match target distributions from the literature \cite{snowset, pbench}. If distributions diverge, subsequent assignments are biased toward underrepresented structural categories.
+
+This multi-objective optimization approach follows PBench \cite{pbench}, with simulated annealing to preserve temporal dynamics and avoid greedy local optima.
+
+\subsection{Workload Execution and Validation}
+\label{subsec:execution-validation}
+
+Generating a workload is only half the problem; the other half is verifying that it actually behaves as intended. Validation will proceed along four dimensions. Performance fidelity asks whether the generated workload's timing characteristics---CPU time distribution, duration percentiles, throughput---match the source trace. Structural fidelity checks operator distributions, join patterns, and query complexity against targets from the literature. Temporal dynamics examines whether concurrency patterns (peak loads, diurnal variation, the saturation threshold) reproduce what production traces show.
+
+The fourth dimension, cross-deployment generalization, may be the most important. If a workload only matches its target on one specific hardware configuration, its value as a benchmark is limited. The validation plan therefore includes executing the same workload across multiple VM configurations to verify that relative performance relationships hold. A workload where Query A takes twice as long as Query B on one machine should show similar ratios on other machines, even if absolute times differ.
+
+Discrepancies discovered during validation will feed back into the matching algorithm. This iterative refinement is expected, as initial parameter tuning will likely require adjustment based on empirical validation.
+
+\section{Potential Approaches}
+\label{sec:approaches}
+
+\subsection{Primary Approach: Component-Based Synthesis with LLM Augmentation}
+\label{subsec:primary-approach}
+
+The primary approach marries two techniques from recent literature: component-based synthesis from PBench \cite{pbench} and LLM augmentation from SQLBarber \cite{sqlbarber}. The synthesis begins with Integer Linear Programming to select an initial query mix that approximately satisfies both structural and performance constraints; this stage functions as a first approximation to the optimal blend of query types. Simulated annealing then refines the temporal assignments, deciding when each query should execute to reproduce the concurrency patterns observed in production traces.
+
+LLMs enter where existing benchmark queries fall short. When the optimization identifies gaps that no available query can fill---perhaps a need for more outer joins or text-key lookups---the LLM generates novel queries targeting those specific characteristics. This division of labor plays to each technique's strengths: optimization handles the combinatorial selection problem efficiently, while LLMs contribute the creative flexibility to synthesize queries that don't exist in the pool.
+
+The process is inherently iterative. Generated workloads get validated, discrepancies get identified, and parameters get adjusted until metrics reach acceptance thresholds. Consequently, iterative refinement is essential to the process.
+
+\subsection{Alternative Approach: Fully Generative Synthesis}
+\label{subsec:alternative-generative}
+
+Should component-based synthesis prove insufficient---if the query pool cannot adequately cover production characteristics even after targeted augmentation---a more radical alternative exists: fully generative synthesis following SQLStorm \cite{sqlstorm}. Rather than selecting from existing benchmarks and filling gaps, this approach would use LLMs to generate thousands of diverse queries directly from schema definitions, profile every generated query, and then apply the matching algorithm to select from this much larger pool.
+
+The appeal is flexibility. Unconstrained by existing benchmark templates, the LLM can in principle generate any query structure the schema supports. The cost is validation overhead: generated queries may contain syntax errors, semantic nonsense, or pathological performance characteristics. Each query must be executed and checked before entering the pool, a process that scales poorly as generation volume increases. This approach remains a fallback rather than the primary plan, to be adopted only if targeted augmentation proves inadequate.
+
+\subsection{Alternative Approach: Learned Performance Prediction}
+\label{subsec:alternative-learned}
+
+The matching algorithm's performance predictions rely on analytical scaling models---essentially, formulas that estimate how query execution time changes with concurrency. If these models prove insufficiently accurate in practice, a learned approach following Stitcher \cite{stitcher} offers an alternative. The idea is to execute various query mixes at different concurrency levels, collect the resulting performance measurements, and train a machine learning model (gradient-boosted trees or a small neural network) to predict performance from query features and concurrency level.
+
+This approach trades the interpretability of analytical models for potentially greater accuracy. Non-linear interactions between queries---where the mix matters, not just the sum of parts---might be captured by learned models but missed by simpler formulas. The cost is the need for training data: hundreds or thousands of mix executions to build a reliable predictor. Whether this investment pays off depends on how well the analytical models perform, which only experimentation will reveal.
+
+\section{Expected Outcomes}
+\label{sec:outcomes}
+
+\subsection{Primary Deliverables}
+\label{subsec:deliverables}
+
+The thesis will produce four concrete deliverables. The centerpiece is a workload synthesis pipeline---software that takes a production trace as input and generates a runnable benchmark workload matching its characteristics. This tool embodies the methodology and makes it usable by others.
+
+Supporting the pipeline is an augmented query pool that extends beyond TPC-DS to cover the structural diversity observed in production, including write operations and metadata queries that standard benchmarks lack. The pool is itself a contribution, reusable for future research even independent of the synthesis algorithm.
+
+The third deliverable is a performance profile database capturing query execution times across multiple hardware configurations and data scales. These profiles encode the empirical scaling relationships that the matching algorithm depends on.
+
+Finally, a validation dataset will document benchmark executions across diverse deployments, with comparative metrics showing how closely generated workloads match their source traces. This dataset provides the evidence for the thesis's claims about workload fidelity.
+
+\subsection{Success Metrics}
+\label{subsec:success-metrics}
+
+Success needs concrete criteria, not just aspirations. For performance distribution similarity, the Kullback-Leibler divergence between generated and target duration distributions should fall below 0.1---a threshold indicating that the distributions are statistically close, not merely vaguely similar. Structural coverage requires that generated workloads contain all major operator types (scan, join, aggregate, sort) within 10\% of their target proportions; a workload claiming to match Snowset should not have dramatically different join fractions.
+
+Concurrency dynamics impose additional constraints: peak and median concurrency levels should fall within 15\% of trace values. A benchmark that runs everything sequentially fails this test regardless of its other virtues. Finally, cross-deployment stability demands that relative query rankings hold across at least three hardware configurations. If Query A consistently takes twice as long as Query B on one machine, that relationship should persist (within tolerance) on others. Meeting all four criteria would constitute strong evidence that the synthesis methodology works; falling short on any would indicate where refinement is needed.
+
+\subsection{Thesis Contributions}
+\label{subsec:contributions}
+
+The thesis aims to contribute on three fronts. Methodologically, it proposes a unified synthesis approach that simultaneously addresses structural and performance fidelity---the gap identified in the literature review where existing tools handle one dimension or the other but not both together. This unification is the core intellectual contribution.
+
+Empirically, the validation across diverse deployments addresses an open question: do synthetic workloads actually generalize beyond the single target system they were tuned for? Prior work has largely assumed this, but the validation dataset will provide evidence one way or the other.
+
+Practically, the open-source benchmark generator will enable future research. Cloud database optimization, learned query processing, and resource management all need realistic workloads for development and testing. A tool that generates such workloads from production traces, validated to actually resemble those traces, has value beyond this thesis.
+
+\section{Timeline}
+\label{sec:timeline}
+
+\begin{figure}[H]
+    \centering
+    \begin{ganttchart}[
+        hgrid,
+        vgrid,
+        x unit=0.7cm,
+        y unit chart=0.6cm,
+        title height=1,
+        bar/.style={fill=blue!50},
+        bar height=0.5,
+        group/.style={fill=blue!80},
+        milestone/.style={fill=red!70}
+    ]{1}{8}
+        \gantttitle{2025}{4}
+        \gantttitle{2026}{4} \\
+        \gantttitle{Sep}{1}
+        \gantttitle{Oct}{1}
+        \gantttitle{Nov}{1}
+        \gantttitle{Dec}{1} 
+        \gantttitle{Jan}{1}
+        \gantttitle{Feb}{1}
+        \gantttitle{Mar}{1}
+        \gantttitle{Apr}{1} \\
+        
+        \ganttgroup{Phase 1-2: Query Pool \& Profiling}{1}{4} \\
+        \ganttbar{Production trace analysis}{1}{2} \\
+        \ganttbar{TPC-DS/TPC-H setup}{2}{3} \\
+        \ganttbar{Initial query profiling}{3}{4} \\
+        \ganttbar{LLM augmentation experiments}{4}{5} \\
+        
+        \ganttgroup{Phase 3: Matching Algorithm}{5}{6} \\
+        \ganttbar{Multi-VM profiling}{5}{5} \\
+        \ganttbar{Query pool augmentation}{5}{6} \\
+        \ganttbar{Matching algorithm impl.}{5}{6} \\
+        
+        \ganttgroup{Phase 4: Validation}{6}{7} \\
+        \ganttbar{Workload execution}{6}{7} \\
+        \ganttbar{Cross-deployment testing}{6}{7} \\
+        \ganttbar{Iterative refinement}{7}{7} \\
+
+        \ganttgroup{Writing \& Defense}{7}{8} \\
+        \ganttbar{Thesis writing}{7}{8} \\
+        \ganttbar{Defense preparation}{8}{8} \\
+
+        \ganttmilestone{Thesis Submission}{8}
+    \end{ganttchart}
+    \caption{Gantt chart showing the timeline for remaining thesis work. Phases 1-2 (shaded) are substantially complete; Phases 3-4 represent remaining work.}
+    \label{fig:gantt}
+\end{figure}
+
+\section{Risk Assessment}
+\label{sec:risks}
+
+Every research project carries risks, and acknowledging them upfront helps with planning realistic mitigations.
+
+\subsection{Technical Risks}
+\label{subsec:technical-risks}
+
+The LLM-based query generation introduces uncertainty about output quality. Generated queries may contain syntax errors, reference non-existent columns, or produce semantic nonsense that happens to be syntactically valid. The mitigation is a validation pipeline that executes every generated query against the test schema before admitting it to the pool; queries that fail get fed back to the LLM with error messages for self-correction. This adds overhead but should catch most problems.
+
+Performance prediction accuracy is another concern. The concurrency scaling models that the matching algorithm depends on are simplifications of complex system behavior. Real databases exhibit non-linear interactions---cache contention, lock conflicts, memory pressure---that analytical models may not capture. If predictions prove insufficiently accurate, the fallback is learned models trained on empirical execution data, trading interpretability for fidelity.
+
+The matching algorithm itself may struggle to converge. Multi-objective optimization with competing constraints can get stuck in local optima or find that no satisfactory solution exists. The planned response is incremental constraint relaxation: if the algorithm stalls, ease the structural constraints slightly and prioritize performance fidelity, which is ultimately more important for benchmark validity.
+
+\subsection{Resource Risks}
+\label{subsec:resource-risks}
+
+Computational costs could escalate beyond expectations. Multi-VM profiling across dozens of configurations, each running hundreds of queries at multiple concurrency levels, adds up quickly. Cloud spot instances offer cost savings but introduce availability uncertainty. The plan is to prioritize profiling on representative query subsets before committing to full-pool profiling, catching methodology problems before they become expensive.
+
+LLM API costs present a similar concern. Extensive query generation and iterative refinement could incur significant fees, especially if larger models prove necessary for quality. The mitigation is layered: use smaller models (GPT-4o-mini) for initial generation and bulk work, reserving larger models for targeted refinement where the smaller ones fall short. Batching queries reduces per-call overhead.
+
+\subsection{Schedule Risks}
+\label{subsec:schedule-risks}
+
+Validation may require more iteration cycles than the schedule anticipates. If generated workloads consistently fail to meet fidelity thresholds, additional rounds of algorithm tuning and re-validation will consume time not currently budgeted. The response is to begin validation early with simplified workloads, identifying problems while there's still schedule slack to address them.
+
+Infrastructure setup could also cause delays. VM provisioning, environment configuration, and data transfer sometimes encounter unexpected issues---cloud provider outages, permission problems, network bottlenecks. All setup procedures are being documented and scripted to enable rapid recovery. If cloud VMs prove unreliable, local Docker containers offer a fallback that sacrifices some realism for reliability.
+
+% ============================================
+% REFERENCES
+% ============================================
+\addcontentsline{toc}{chapter}{References}
+\bibliography{references}
+
+% ============================================
+% APPENDICES (if needed)
+% ============================================
+% \appendix
+% \chapter{Additional Materials}
+% \label{app:materials}
+
+\end{document}
